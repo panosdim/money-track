@@ -1,0 +1,161 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-styles/color.html">
+
+
+<dom-module id="login-page">
+  <template>
+    <style>
+      #toast {
+        --paper-toast-background-color: red;
+      }
+
+      paper-card {
+        --paper-card-header-color: var(--text-primary-color);
+        --paper-card-header: {
+          background-color: var(--primary-color);
+        };
+        --paper-card: {
+          width: 360px;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          /* bring your own prefixes */
+          transform: translate(-50%, -50%);
+        };
+      }
+
+      #login-button {
+        margin: 20px 0 0 0;
+        padding-left: 30px;
+        padding-right: 30px;
+        background: var(--primary-color);
+        color: var(--text-primary-color);
+      }
+    </style>
+    <iron-a11y-keys keys="enter" on-keys-pressed="_logIn"></iron-a11y-keys>
+
+    <paper-card heading="Money Track">
+      <div class="card-content">
+        <form id="loginForm" class="login">
+          <paper-input id="username" label="Username" name="username" required auto-validate autocomplete="on"
+                       error-message="Username is needed!"></paper-input>
+          <paper-input id="password" label="Password" name="password" type="password" required auto-validate
+                       autocomplete="on"
+                       error-message="Password is needed!"></paper-input>
+        </form>
+      </div>
+      <div class="card-actions">
+        <paper-button id="login-button" on-tap="_logIn" raised>Login</paper-button>
+      </div>
+    </paper-card>
+
+    <paper-toast id="toast"></paper-toast>
+
+    <iron-ajax id="ajax" handle-as="json" method="POST" content-type="application/json;charset=UTF-8"
+               on-response="_handleBackendResponse"
+               on-error="_handleBackendError"></iron-ajax>
+  </template>
+
+  <script>
+      class LoginPage extends Polymer.Element {
+
+          static get is() {
+              return 'login-page';
+          }
+
+          static get properties() {
+              return {
+                  loggedIn: {
+                      type: Boolean,
+                      value: false,
+                      notify: true,
+                  },
+                  selected: {
+                      type: Number,
+                      notify: true,
+                  },
+              };
+          }
+
+          constructor() {
+              super();
+          }
+
+          ready() {
+              super.ready();
+          }
+
+          _selectPage() {
+              this.selected = this.loggedIn ? 1 : 0;
+          }
+
+          _logIn() {
+              if (LoginPage._validate(this.$.loginForm)) {
+                  this.$.ajax.url = 'php/login.php';
+                  this.$.ajax.body = JSON.stringify(
+                      this._serialize(this.$.loginForm)
+                  );
+                  this.$.ajax.generateRequest();
+              }
+          }
+
+          static _validate(form) {
+              const inputs = form.getElementsByTagName('paper-input');
+              for (let i = 0; i < inputs.length; i++) {
+                  if (!inputs[i].validate()) {
+                      return false;
+                  }
+              }
+              return true;
+          }
+
+          _serialize(form) {
+              let json = {};
+
+              function addSerializedElement(name, value) {
+                  // If the name doesn't exist, add it. Otherwise, serialize it to
+                  // an array,
+                  if (json[name] === undefined) {
+                      json[name] = value;
+                  } else {
+                      if (!Array.isArray(json[name])) {
+                          json[name] = [json[name]];
+                      }
+                      json[name].push(value);
+                  }
+              }
+
+              const inputs = form.getElementsByTagName('paper-input');
+              for (let i = 0; i < inputs.length; i++) {
+                  addSerializedElement(inputs[i].name, inputs[i].value);
+              }
+
+              return json;
+          }
+
+          _handleBackendResponse(evt) {
+              const rsp = evt.detail.response;
+              if (rsp && rsp.status) {
+                  this.$.toast.show(rsp.message);
+                  if (rsp.status === 'info') {
+                      this.loggedIn = true;
+                  }
+              } else {
+                  this.$.toast.show('No response');
+              }
+          }
+
+          _handleBackendError() {
+              this.$.toast.show('Error Contacting Server');
+          }
+      }
+
+      window.customElements.define(LoginPage.is, LoginPage);
+  </script>
+</dom-module>

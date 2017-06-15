@@ -1,0 +1,144 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/app-layout/app-layout.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/app-layout/demo/sample-content.html">
+<link rel="import" href="income-page.html">
+
+<dom-module id="main-page">
+  <template>
+    <style>
+      app-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #4285f4;
+        color: #fff;
+      }
+
+      app-toolbar {
+        background-color: #4285f4;
+        color: #fff;
+      }
+
+      .content {
+        padding-top: 128px;
+      }
+
+      paper-tabs {
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        width: 100%;
+        text-transform: uppercase;
+        margin-bottom: 1px;
+      }
+
+      paper-button {
+        font-family: 'Roboto', 'Noto', sans-serif;
+        font-weight: normal;
+        font-size: 14px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      paper-button.pink {
+        background-color: var(--paper-pink-500);
+        color: white;
+        --paper-button-raised-keyboard-focus: {
+          background-color: var(--paper-pink-a200) !important;
+          color: white !important;
+        };
+      }
+
+      paper-button.pink:hover {
+        background-color: var(--paper-pink-100);
+      }
+
+      paper-progress {
+        width: 100%;
+      }
+
+    </style>
+
+    <app-header fixed>
+      <app-toolbar>
+        <div main-title>Money Track</div>
+        <paper-button class="pink" on-tap="_logout" raised>Logout</paper-button>
+      </app-toolbar>
+      <app-toolbar>
+        <paper-tabs selected="{{tabSelected}}" scrollable>
+          <paper-tab>Dashboard</paper-tab>
+          <paper-tab>Income</paper-tab>
+          <paper-tab>Expenses</paper-tab>
+          <paper-tab>Categories</paper-tab>
+        </paper-tabs>
+        <paper-progress id="prgBar" value="10" indeterminate bottom-item hidden$="[[!loading]]"></paper-progress>
+      </app-toolbar>
+    </app-header>
+
+    <div class="content">
+      <iron-pages id="tab-pages" selected="{{tabSelected}}">
+        <sample-content size="100"></sample-content>
+        <income-page logged-in="{{loggedIn}}"></income-page>
+        <div>Expenses</div>
+        <sample-content size="50"></sample-content>
+      </iron-pages>
+    </div>
+
+    <iron-ajax id="ajax" handle-as="json" method="GET"></iron-ajax>
+  </template>
+
+  <script>
+      class MainPage extends Polymer.Element {
+
+          static get is() {
+              return 'main-page';
+          }
+
+          static get properties() {
+              return {
+                  loggedIn: {
+                      type: Boolean,
+                      notify: true,
+                  },
+                  tabSelected: {
+                      type: Number,
+                      notify: true,
+                      value: 0,
+                  },
+                  loading: {
+                      type: Boolean,
+                      value: true,
+                      notify: true,
+                  },
+              };
+          }
+
+          constructor() {
+              super();
+          }
+
+          ready() {
+              super.ready();
+              this.addEventListener('income-loading', (e) => {
+                  this.loading = e.detail;
+              });
+          }
+
+          _logout() {
+              this.$.ajax.url = 'php/logout.php';
+              this.$.ajax.generateRequest();
+              this.loggedIn = false;
+          }
+      }
+
+      window.customElements.define(MainPage.is, MainPage);
+  </script>
+</dom-module>

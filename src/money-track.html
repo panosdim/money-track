@@ -1,0 +1,85 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="login-page.html">
+<link rel="import" href="main-page.html">
+
+<dom-module id="money-track">
+  <template>
+    <style>
+      :host {
+        --app-primary-color: #4285f4;
+        --app-secondary-color: pink;
+
+        display: block;
+      }
+    </style>
+
+    <iron-pages id="pages" selected="[[selected]]">
+      <login-page id="login" logged-in="{{loggedIn}}"></login-page>
+      <main-page id="main" logged-in="{{loggedIn}}"></main-page>
+    </iron-pages>
+
+    <iron-ajax id="ajax" handle-as="json" method="GET"
+               on-response="_handleBackendResponse"
+               on-error="_handleBackendError"></iron-ajax>
+  </template>
+
+  <script>
+      class MoneyTrack extends Polymer.Element {
+
+          static get is() {
+              return 'money-track';
+          }
+
+          static get properties() {
+              return {
+                  loggedIn: {
+                      type: Boolean,
+                      value: false,
+                      notify: true,
+                      observer: '_selectPage',
+                  },
+                  selected: {
+                      type: Number,
+                      notify: true,
+                  },
+              };
+          }
+
+          constructor() {
+              super();
+          }
+
+          ready() {
+              super.ready();
+              this.$.ajax.url = 'php/session.php';
+              this.$.ajax.generateRequest();
+          }
+
+          _selectPage() {
+              this.selected = this.loggedIn ? 1 : 0;
+          }
+
+          _handleBackendResponse(evt) {
+              const rsp = evt.detail.response;
+              this.loggedIn = !!(rsp && rsp.loggedIn);
+          }
+
+          _handleBackendError() {
+              this.loggedIn = false;
+          }
+      }
+
+      window.customElements.define(MoneyTrack.is, MoneyTrack);
+  </script>
+</dom-module>

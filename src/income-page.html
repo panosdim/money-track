@@ -1,0 +1,207 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-sorter.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="fecha-js.html">
+
+<dom-module id="income-page">
+  <template>
+    <style>
+      :host {
+        --app-primary-color: #4285f4;
+        --app-secondary-color: pink;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #add-button {
+        position: absolute;
+        right: 32px;
+        bottom: 32px;
+        z-index: 2;
+      }
+
+      #income {
+        flex: 1;
+        color: var(--primary-text-color);
+        border: 0;
+        height: calc(100vh - 176px);
+      }
+
+      vaadin-grid#income {
+        font-family: Roboto, sans-serif;
+        --divider-color: rgba(0, 0, 0, var(--dark-divider-opacity));
+        --vaadin-grid-cell: {
+          padding: 0;
+        };
+
+        --vaadin-grid-header-cell: {
+          height: 56px;
+          text-transform: uppercase;
+          font-size: 12px;
+          font-weight: 500;
+          padding: 0 24px 0 24px;
+        };
+
+        --vaadin-grid-body-cell: {
+          color: rgba(0, 0, 0, var(--dark-primary-opacity));
+          font-size: 15px;
+          padding: 3px 24px;
+          cursor: pointer;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        };
+
+        --vaadin-grid-body-row-hover-cell: {
+          background-color: var(--paper-grey-200);
+        };
+
+        --vaadin-grid-body-row-selected-cell: {
+          background-color: var(--paper-grey-100);
+        };
+
+        --vaadin-grid-focused-cell: {
+          box-shadow: none;
+          font-weight: bold;
+        };
+      }
+
+      vaadin-grid-sorter {
+        margin-right: -20px;
+        height: 56px;
+      }
+
+      vaadin-grid .money {
+        text-align: right;
+      }
+
+      vaadin-grid#income .numeric {
+        text-align: right;
+      }
+    </style>
+
+    <iron-ajax id="ajax" url="php/get_income.php"
+               handle-as="json"
+               content-type="application/json;charset=UTF-8"
+               on-response="_handleBackendResponse">
+    </iron-ajax>
+
+    <!-- The array is set as the <vaadin-grid>'s "items" property -->
+    <vaadin-grid id="income" aria-label="Income" items="[[income]]" multi-sort>
+
+      <vaadin-grid-column width="5%" frozen>
+        <template class="header">
+          <div class="header-cell">
+            ID
+          </div>
+        </template>
+        <template>[[item.id]]</template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column width="30%">
+        <template class="header">
+          <vaadin-grid-sorter path="date">
+            <div class="header-cell">
+              Date
+            </div>
+          </vaadin-grid-sorter>
+        </template>
+        <template>[[_formatDate(item.date)]]</template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column width="20%">
+        <template class="header">
+          <vaadin-grid-sorter path="amount" class="numeric">
+            <div class="header-cell">
+              Salary
+            </div>
+          </vaadin-grid-sorter>
+        </template>
+        <template><span class="money">[[_formatMoney(item.amount)]]</span></template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column width="45%">
+        <template class="header">
+          <vaadin-grid-sorter path="comment">
+            <div class="header-cell">
+              Comment
+            </div>
+          </vaadin-grid-sorter>
+        </template>
+        <template>[[item.comment]]</template>
+      </vaadin-grid-column>
+    </vaadin-grid>
+
+    <paper-fab icon="add" on-tap="_showExpenseEditor" id="add-button"></paper-fab>
+  </template>
+
+  <script>
+      class IncomePage extends Polymer.Element {
+
+          static get is() {
+              return 'income-page';
+          }
+
+          static get properties() {
+              return {
+                  loggedIn: {
+                      type: Boolean,
+                      notify: true,
+                      observer: '_logged',
+                  },
+                  income: {
+                      type: Array,
+                      notify: true,
+                      value: function() {
+                          return [];
+                      },
+                  },
+              };
+          }
+
+          constructor() {
+              super();
+          }
+
+          ready() {
+              super.ready();
+              this.$.ajax.addEventListener('loading-changed', (evt) => {
+                  const event = new CustomEvent('income-loading',
+                      {
+                          detail: evt.detail.value,
+                          bubbles: true,
+                          composed: true,
+                      });
+                  this.dispatchEvent(event);
+              });
+          }
+
+          _formatMoney(money) {
+              if (money) {
+                  return money + ' \u20AC';
+              }
+          }
+
+          _formatDate(date) {
+              if (date) {
+                  return fecha.format(fecha.parse(date, 'YYYY-MM'), 'MMMM YYYY');
+              }
+          }
+
+          _logged() {
+              if (this.loggedIn) {
+                  this.$.ajax.generateRequest();
+              }
+          }
+
+          _handleBackendResponse(evt) {
+              this.income = evt.detail.response;
+          }
+      }
+
+      window.customElements.define(IncomePage.is, IncomePage);
+  </script>
+</dom-module>
