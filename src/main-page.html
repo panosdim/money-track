@@ -10,6 +10,8 @@
 <link rel="import" href="../bower_components/vaadin-date-picker/vaadin-date-picker.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/app-layout/demo/sample-content.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/vaadin-icons/vaadin-icons.html">
 <link rel="import" href="income-page.html">
 
 <dom-module id="main-page">
@@ -74,10 +76,10 @@
       </app-toolbar>
       <app-toolbar>
         <paper-tabs selected="{{tabSelected}}" scrollable>
-          <paper-tab>Dashboard</paper-tab>
-          <paper-tab>Income</paper-tab>
-          <paper-tab>Expenses</paper-tab>
-          <paper-tab>Categories</paper-tab>
+          <paper-tab><div><iron-icon icon="vaadin:dashboard"></iron-icon> Dashboard</div></paper-tab>
+          <paper-tab><div><iron-icon icon="vaadin:cash"></iron-icon> Income</div></paper-tab>
+          <paper-tab><div><iron-icon icon="vaadin:invoice"></iron-icon> Expenses</div></paper-tab>
+          <paper-tab><div><iron-icon icon="vaadin:tags"></iron-icon> Categories</div></paper-tab>
         </paper-tabs>
         <paper-progress id="prgBar" value="10" indeterminate bottom-item hidden$="[[!loading]]"></paper-progress>
       </app-toolbar>

@@ -1,0 +1,300 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="vaadin-date-picker-theme.html">
+
+<dom-module id="income-editor">
+  <template>
+    <style>
+      #dialog {
+        display: block;
+        padding: 0 8px;
+        border-top: 3px solid var(--accent-color);
+        margin: 0;
+        background: var(--primary-background-color);
+        max-height: 100vh;
+        /* Keep overflow visible so vaadin-date-picker dropdown won't clip */
+        overflow: visible;
+      }
+
+      .main-layout {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .flex {
+        flex: 1;
+      }
+
+      .form {
+        flex: 2;
+      }
+
+      #form > * {
+        margin-bottom: 8px;
+      }
+
+      .buttons-layout {
+        display: flex;
+        flex-direction: row;
+        margin-top: 16px;
+      }
+
+      .buttons-layout paper-button {
+        width: 150px;
+      }
+
+      .save-button {
+        background: var(--primary-color);
+        color: var(--text-primary-color);
+      }
+
+      .main-layout h2 {
+        font-size: 24px !important;
+        font-weight: 300 !important;
+      }
+
+      paper-button[hidden] {
+        display: none;
+      }
+
+      #error {
+        color: red;
+      }
+
+      :host > .wrapper {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+      }
+
+      .close-button {
+        color: var(--dark-primary-color);
+      }
+
+      .delete-button {
+        margin-left: auto;
+        color: var(--text-primary-color);
+        background: var(--accent-color);
+      }
+
+      form::content label {
+        font-weight: bold !important;
+        color: #999 !important;
+      }
+
+      .wrapper {
+        display: flex;
+      }
+
+      #toast[error] {
+        --paper-toast-background-color: red;
+      }
+
+      #toast[success] {
+        --paper-toast-background-color: green;
+      }
+    </style>
+
+
+    <paper-dialog id="dialog" modal no-cancel-on-esc-key="false">
+      <div class="main-layout">
+        <h2>{{caption}}</h2>
+        <span class="flex"></span>
+        <paper-icon-button icon="close" on-tap="close" class="close-button self-start"></paper-icon-button>
+      </div>
+
+      <div class="wrapper">
+        <div class="form">
+          <form id="form">
+            <iron-a11y-keys keys="enter" on-keys-pressed="_save"></iron-a11y-keys>
+            <paper-input name="total" id="total" value="{{income.amount}}" type="number" max="10000" label="Total"
+                         required step="0.01" always-float-label>
+              <div slot="suffix">&euro;</div>
+            </paper-input>
+
+            <vaadin-date-picker label="Date" placeholder="YYYY-MM" value="{{income.date}}" id="date" name="date"
+                                required></vaadin-date-picker>
+            <paper-textarea id="comment" name="comment" label="Comment" value="{{income.comment}}"
+                            always-float-label></paper-textarea>
+          </form>
+        </div>
+      </div>
+      <div class="buttons-layout">
+        <paper-button raised on-tap="_save" class="save-button">Save</paper-button>
+        <paper-button on-tap="_delete" id="delete" class="delete-button">Delete</paper-button>
+      </div>
+      <span id="error"></span>
+    </paper-dialog>
+
+    <iron-ajax id="ajax" handle-as="json" method="POST" content-type="application/json;charset=UTF-8"
+               on-response="_handleBackendResponse"
+               on-error="_handleBackendError"></iron-ajax>
+
+    <paper-toast id="toast"></paper-toast>
+  </template>
+
+  <script>
+      class IncomeEditor extends Polymer.Element {
+
+          static get is() {
+              return 'income-editor';
+          }
+
+          static get properties() {
+              return {
+                  income: {
+                      type: Object,
+                      notify: true,
+                      value: function() {
+                          return {};
+                      },
+                  },
+                  caption: {
+                      type: String,
+                      computed: '_getCaption(income)',
+                  },
+              };
+          }
+
+          constructor() {
+              super();
+          }
+
+          ready() {
+              super.ready();
+              this.$.date.i18n.formatDate = function(date) {
+                  return fecha.format(date, 'MMMM YYYY');
+              };
+              this.$.date.i18n.parseDate = function(dateString) {
+                  return fecha.parse(dateString, 'YYYY-MM');
+              };
+          }
+
+          _getCaption(income) {
+              if (income.id) {
+                  return 'Edit Income';
+              } else {
+                  return 'Add Income';
+              }
+          }
+
+          _save() {
+              this.$.error.innerText = '';
+              if (this._validate(this.$.form)) {
+                  this.income.date = fecha.format(
+                      fecha.parse(this.$.date._inputValue, 'MMMM YYYY'),
+                      'YYYY-MM-DD');
+                  this.$.ajax.url = 'php/save_income.php';
+                  this.$.ajax.body = JSON.stringify(this.income);
+                  this.$.ajax.generateRequest();
+                  this.close();
+
+                  // Notify income-page.html to update the income table
+                  const event = new CustomEvent('income-reload',
+                      {
+                          detail: 'saved',
+                          bubbles: true,
+                          composed: true,
+                      });
+                  this.dispatchEvent(event);
+              } else {
+                  this.$.dialog.scrollTop = 0;
+                  this.$.error.innerText = 'Please fill all required fields';
+              }
+          }
+
+          open(income) {
+              if (income.date) {
+                  income.date = fecha.format(
+                      fecha.parse(income.date, 'YYYY-MM'),
+                      'YYYY-MM-DD');
+              }
+              this.income = income;
+              this.$.delete.hidden = !this.income.id;
+              this.$.dialog.open();
+          }
+
+          close() {
+              this.income = {};
+              this.$.date._inputValue = '';
+              this.$.dialog.close();
+          }
+
+          _delete() {
+              this.$.ajax.url = 'php/delete_income.php';
+              this.$.ajax.body = JSON.stringify(this.income);
+              this.$.ajax.generateRequest();
+              this.close();
+
+              // Notify income-page.html to update the income table
+              const event = new CustomEvent('income-reload',
+                  {
+                      detail: 'deleted',
+                      bubbles: true,
+                      composed: true,
+                  });
+              this.dispatchEvent(event);
+          }
+
+          _validate(form) {
+              const inputs = form.getElementsByTagName('paper-input');
+              const dates = form.getElementsByTagName('vaadin-date-picker');
+              let result = true;
+              for (let i = 0; i < inputs.length; i++) {
+                  if (!inputs[i].validate()) {
+                      result = false;
+                  }
+              }
+              for (let i = 0; i < dates.length; i++) {
+                  const input = dates[i].shadowRoot
+                      .querySelector('vaadin-text-field');
+                  const label = input.shadowRoot.querySelector('label');
+                  const div = input.shadowRoot
+                      .querySelector('div[part~="input-field"]');
+                  if (!dates[i].checkValidity()) {
+                      div.setAttribute('invalid', '');
+                      label.setAttribute('invalid', '');
+                      result = false;
+                  } else {
+                      div.removeAttribute('invalid');
+                      label.removeAttribute('invalid');
+                  }
+              }
+              return result;
+          }
+
+          _handleBackendResponse(evt) {
+              const rsp = evt.detail.response;
+              if (rsp && rsp.status) {
+                  if (rsp.status === 'error') {
+                      this.$.toast.removeAttribute('success');
+                      this.$.toast.setAttribute('error', '');
+                  } else {
+                      this.$.toast.removeAttribute('error');
+                      this.$.toast.setAttribute('success', '');
+                  }
+                  this.$.toast.show(rsp.message);
+              } else {
+                  this.$.toast.removeAttribute('success');
+                  this.$.toast.setAttribute('error', '');
+                  this.$.toast.show('No response');
+              }
+          }
+
+          _handleBackendError() {
+              this.$.toast.show('Error Contacting Server');
+          }
+      }
+
+      window.customElements.define(IncomeEditor.is, IncomeEditor);
+  </script>
+</dom-module>

@@ -30,7 +30,11 @@
     "vaadin-date-picker": "vaadin/vaadin-date-picker#^2.0.0",
     "vaadin-grid": "vaadin/vaadin-grid#^3.0.0",
     "fecha": "^2.3.1",
-    "paper-fab": "PolymerElements/paper-fab#^2.0.0"
+    "paper-fab": "PolymerElements/paper-fab#^2.0.0",
+    "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^2.0.0",
+    "paper-listbox": "PolymerElements/paper-listbox#^2.0.0",
+    "vaadin-icons": "^4.1.0"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^6.0.0"

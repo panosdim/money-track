@@ -1,0 +1,252 @@
+<dom-module id="text-field-styles" theme-for="vaadin-text-field">
+  <template>
+    <style>
+      .floated-label-placeholder {
+        font-family: var(--paper-font-caption_-_font-family);
+        -webkit-font-smoothing: var(--paper-font-caption_-_-webkit-font-smoothing);
+        white-space: var(--paper-font-caption_-_white-space);
+        overflow: var(--paper-font-caption_-_overflow);
+        text-overflow: var(--paper-font-caption_-_text-overflow);
+        font-size: var(--paper-font-caption_-_font-size);
+        font-weight: var(--paper-font-caption_-_font-weight);
+        letter-spacing: var(--paper-font-caption_-_letter-spacing);
+        line-height: var(--paper-font-caption_-_line-height);
+      }
+
+      [part~="input-field"] {
+        border-bottom: 1px solid var(--paper-input-container-color, var(--secondary-text-color));
+      }
+
+      :host([focused]) [part~="input-field"] {
+        border-bottom: 2px solid var(--paper-input-container-focus-color, var(--primary-color));
+      }
+
+      [invalid][part~="input-field"] {
+        border-bottom: 2px solid var(--paper-input-container-invalid-color, var(--error-color));
+      }
+
+      [part~="value"]:focus {
+        outline: none;
+      }
+
+      [part~="value"] {
+        font-family: inherit;
+        border: none;
+        font-size: medium;
+        background: transparent;
+      }
+
+      [part="label"] {
+        color: var(--secondary-text-color);
+      }
+
+      :host([focused]) [part="label"] {
+        color: var(--primary-color);
+      }
+
+      label[part="label"] {
+        font-family: var(--paper-font-caption_-_font-family);
+        -webkit-font-smoothing: var(--paper-font-caption_-_-webkit-font-smoothing);
+        white-space: var(--paper-font-caption_-_white-space);
+        overflow: var(--paper-font-caption_-_overflow);
+        text-overflow: var(--paper-font-caption_-_text-overflow);
+        font-size: var(--paper-font-caption_-_font-size);
+        font-weight: var(--paper-font-caption_-_font-weight);
+        letter-spacing: var(--paper-font-caption_-_letter-spacing);
+        line-height: var(--paper-font-caption_-_line-height);font-family: var(--paper-font-caption_-_font-family);
+        -webkit-font-smoothing: var(--paper-font-caption_-_-webkit-font-smoothing);
+        white-space: var(--paper-font-caption_-_white-space);
+        overflow: var(--paper-font-caption_-_overflow);
+        text-overflow: var(--paper-font-caption_-_text-overflow);
+        font-size: var(--paper-font-caption_-_font-size);
+        font-weight: var(--paper-font-caption_-_font-weight);
+        letter-spacing: var(--paper-font-caption_-_letter-spacing);
+        line-height: var(--paper-font-caption_-_line-height);
+      }
+
+      [invalid][part="label"] {
+        color: var(--error-color);
+      }
+    </style>
+  </template>
+</dom-module>
+
+<dom-module id="button-styles" theme-for="vaadin-button">
+  <template>
+    <style>
+      :host([focus-ring]) [part~="button"] {
+        color: var(--primary-color);
+      }
+
+      :host([part~="today-button"]) [part~="button"]::before {
+        content: "•";
+        color: var(--primary-color);
+        font-size: x-large;
+      }
+
+      [part~="button"] {
+        font-family: inherit;
+        border: none;
+        background: #f7f6f2;
+        font-size: medium;
+        cursor: pointer;
+      }
+
+      [part~="button"]:focus {
+        outline: none;
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="date-picker-styles" theme-for="vaadin-date-picker">
+  <template>
+    <style include="vaadin-date-picker-default-theme">
+      :host {
+        width: 250px;
+        max-width: 100%;
+        width: 100%;
+      }
+
+      [part="text-field"] {
+        max-width: 100%;
+      }
+    </style>
+  </template>
+</dom-module>
+
+<dom-module id="month-calendar-styles" theme-for="vaadin-month-calendar">
+  <template>
+    <style include="vaadin-month-calendar-default-theme">
+      [part~="date"] {
+        padding: 12px 0;
+        height: 40px;
+      }
+
+      [part~="date"][today]:not([focused]) {
+        position: relative;
+      }
+
+      [part~="date"][today]:not([focused])::before {
+        content: '';
+        position: absolute;
+        background: var(--primary-color);
+        opacity: 0.3;
+        width: 26px;
+        height: 26px;
+        border-radius: 100%;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+      }
+
+      [part~="date"][selected] {
+        background: var(--primary-color);
+        color: #fff;
+        border-radius: 6px;
+        border: 4px solid #fff;
+        padding-top: 8px;
+      }
+
+      :host(:not([focused])) [part~="date"][focused] {
+        opacity: 0.7;
+      }
+
+      [part~="date"]:not([disabled]):hover,
+      [part~="date"][focused]:not([disabled]) {
+        background: var(--primary-color);
+        color: #fff;
+        border-radius: 6px;
+        border: 4px solid #fff;
+        padding-top: 8px;
+      }
+
+      [part~="date"][selected] {
+        font-weight: 600;
+      }
+
+      [part~="weekdays"] {
+        background: #f7f6f2;
+        transform: translateY(-14px);
+        font-weight: 100;
+        font-size: small;
+        border-radius: 6px;
+      }
+
+      [part~="weekday"] {
+        text-transform: none;
+        color: #babbb6;
+      }
+
+      [part~="week-numbers"] {
+        transform: translateY(-14px);
+      }
+
+      [part~="week-number"] {
+        position: relative;
+        color: rgba(0, 0, 0, 0.1);
+      }
+
+      [part~="week-number"]::after {
+        content: '';
+        position: absolute;
+        left: calc(100% - 5px);
+        top: 14px;
+        width: 325px;
+        height: 1px;
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+
+      [part~="month-header"] {
+        font-size: 24px;
+        font-weight: 100;
+        margin-bottom: 16px;
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="overlay-styles" theme-for="vaadin-date-picker-overlay">
+  <template>
+    <style include="vaadin-date-picker-overlay-default-theme">
+      :host {
+        border-radius: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 2px 0 rgba(0, 0, 0, 0.2);
+      }
+
+      [part~="years"] {
+        background: #716a60;
+        color: #babbb6;
+      }
+
+      [part~="months"] {
+        --vaadin-infinite-scroller-item-height: 340px;
+      }
+
+      [part~="toolbar"] {
+        background: #f7f6f2;
+      }
+
+      [part~="overlay-header"] {
+        background: #f7f6f2;
+      }
+
+      [part~="years-toggle-button"] {
+        background: transparent;
+      }
+
+      [part~="years"] [part~="year-number"][current] {
+        color: var(--primary-color);
+      }
+
+      [part~="years"] [part~="year-separator"]::after {
+        color: #babbb6;
+      }
+
+      [part~="month"][disabled] {
+        opacity: 0.3;
+      }
+    </style>
+  </template>
+</dom-module>

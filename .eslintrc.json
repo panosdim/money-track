@@ -16,6 +16,7 @@
     "require-jsdoc": "off"
   },
   "globals": {
-    "Polymer": true
+    "Polymer": true,
+    "fecha": true
   }
 }
