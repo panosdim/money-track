@@ -1,0 +1,84 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="income-chart">
+  <template>
+    <style>
+      :host {
+        display: block;
+        background: #f8f9f9;
+        padding: 20px 24px;
+      }
+
+      #chart_div {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+
+    <div id="chart_div"></div>
+
+  </template>
+
+  <script>
+      class IncomeChart extends Polymer.Element {
+
+          static get is() {
+              return 'income-chart';
+          }
+
+          static get properties() {
+              return {
+                  loggedIn: {
+                      type: Boolean,
+                      notify: true,
+                      observer: '_logged',
+                  },
+                  income: {
+                      type: Array,
+                      notify: true,
+                      value: function() {
+                          return [];
+                      },
+                  },
+                  activeItem: {
+                      observer: '_activeItemChanged',
+                  },
+              };
+          }
+
+          constructor() {
+              super();
+          }
+
+          ready() {
+              super.ready();
+
+              const data = google.visualization.arrayToDataTable([
+                  ['City', '2010 Population', '2000 Population'],
+                  ['New York City, NY', 8175000, 8008000],
+                  ['Los Angeles, CA', 3792000, 3694000],
+                  ['Chicago, IL', 2695000, 2896000],
+                  ['Houston, TX', 2099000, 1953000],
+                  ['Philadelphia, PA', 1526000, 1517000]
+              ]);
+
+              const options = {
+                  title: 'Population of Largest U.S. Cities',
+                  chartArea: {width: '50%'},
+                  hAxis: {
+                      title: 'Total Population',
+                      minValue: 0,
+                  },
+                  vAxis: {
+                      title: 'City',
+                  },
+              };
+
+              const chart = new google.visualization.BarChart(this.$.chart_div);
+              chart.draw(data, options);
+          }
+      }
+
+      window.customElements.define(IncomeChart.is, IncomeChart);
+  </script>
+</dom-module>

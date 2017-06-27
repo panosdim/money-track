@@ -196,16 +196,6 @@
                   this.$.ajax.url = 'php/save_income.php';
                   this.$.ajax.body = JSON.stringify(this.income);
                   this.$.ajax.generateRequest();
-                  this.close();
-
-                  // Notify income-page.html to update the income table
-                  const event = new CustomEvent('income-reload',
-                      {
-                          detail: 'saved',
-                          bubbles: true,
-                          composed: true,
-                      });
-                  this.dispatchEvent(event);
               } else {
                   this.$.dialog.scrollTop = 0;
                   this.$.error.innerText = 'Please fill all required fields';
@@ -233,16 +223,17 @@
               this.$.ajax.url = 'php/delete_income.php';
               this.$.ajax.body = JSON.stringify(this.income);
               this.$.ajax.generateRequest();
-              this.close();
 
               // Notify income-page.html to update the income table
-              const event = new CustomEvent('income-reload',
+              const event = new CustomEvent('income-deleted',
                   {
-                      detail: 'deleted',
+                      detail: this.income,
                       bubbles: true,
                       composed: true,
                   });
               this.dispatchEvent(event);
+
+              this.close();
           }
 
           _validate(form) {
@@ -281,6 +272,28 @@
                   } else {
                       this.$.toast.removeAttribute('error');
                       this.$.toast.setAttribute('success', '');
+
+                      // Notify income-page.html to update the income table
+                      if (this.income.id) {
+                          const event = new CustomEvent('income-saved',
+                              {
+                                  detail: this.income,
+                                  bubbles: true,
+                                  composed: true,
+                              });
+                          this.dispatchEvent(event);
+                      } else {
+                          this.income.id = rsp.id;
+                          const event = new CustomEvent('income-added',
+                              {
+                                  detail: this.income,
+                                  bubbles: true,
+                                  composed: true,
+                              });
+                          this.dispatchEvent(event);
+                      }
+
+                      this.close();
                   }
                   this.$.toast.show(rsp.message);
               } else {

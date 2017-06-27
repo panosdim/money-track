@@ -5,6 +5,7 @@
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="income-editor.html">
+<link rel="import" href="income-chart.html">
 
 <dom-module id="income-page">
   <template>
@@ -12,9 +13,7 @@
       :host {
         --app-primary-color: #4285f4;
         --app-secondary-color: pink;
-        position: relative;
         display: flex;
-        flex-direction: column;
       }
 
       #add-button {
@@ -29,6 +28,23 @@
         color: var(--primary-text-color);
         border: 0;
         height: calc(100vh - 176px);
+      }
+
+      #chart {
+        border-left: 1px solid #ddd;
+        width: 250px;
+        box-shadow: rgba(0, 0, 0, 0.2) 6px 0px 16px -10px inset;
+        z-index: 1;
+      }
+
+      @media (max-width: 900px) {
+        #chart {
+          display: none;
+        }
+        #income {
+          margin-bottom: 0;
+          height: calc(100vh - 176px);
+        }
       }
 
       vaadin-grid#income {
@@ -92,7 +108,7 @@
     <!-- The array is set as the <vaadin-grid>'s "items" property -->
     <vaadin-grid id="income" aria-label="Income" items="[[income]]" active-item="{{activeItem}}" multi-sort>
 
-      <vaadin-grid-column width="5%" frozen>
+      <vaadin-grid-column width="5%" hidden>
         <template class="header">
           <div class="header-cell">
             ID
@@ -101,9 +117,9 @@
         <template>[[item.id]]</template>
       </vaadin-grid-column>
 
-      <vaadin-grid-column width="30%">
+      <vaadin-grid-column width="30%" frozen>
         <template class="header">
-          <vaadin-grid-sorter path="date">
+          <vaadin-grid-sorter path="date" direction="desc">
             <div class="header-cell">
               Date
             </div>
@@ -137,6 +153,7 @@
 
     <paper-fab icon="add" on-tap="_showExpenseEditor" id="add-button"></paper-fab>
     <income-editor id="incomeEditor"></income-editor>
+    <income-chart id="chart"></income-chart>
 
   </template>
 
@@ -173,6 +190,7 @@
 
           ready() {
               super.ready();
+
               this.$.ajax.addEventListener('loading-changed', (evt) => {
                   // Notify main-page.html to stop or start the progress bar
                   const event = new CustomEvent('income-loading',
@@ -183,8 +201,22 @@
                       });
                   this.dispatchEvent(event);
               });
-              this.addEventListener('income-reload', (e) => {
-                  this.$.ajax.generateRequest();
+
+              this.addEventListener('income-saved', (e) => {
+                  let index = this.income.findIndex((el) => {
+                      return el.id === e.detail.id;
+                  });
+                  this.income.splice(index, 1);
+                  this.push('income', e.detail);
+              });
+
+              this.addEventListener('income-deleted', (e) => {
+                  let index = this.income.indexOf(e.detail);
+                  this.income.splice(index, 1);
+              });
+
+              this.addEventListener('income-added', (e) => {
+                  this.push('income', e.detail);
               });
           }
 

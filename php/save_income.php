@@ -31,6 +31,7 @@ if ($stmt->execute($values)) {
     echo json_encode([
         "status"  => "success",
         "message" => "Income was saved successfully.",
+        "id" => $db->lastInsertId(),
     ]);
 } else {
     // DB interaction was not successful. Inform user with message.
