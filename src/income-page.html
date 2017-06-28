@@ -32,8 +32,8 @@
 
       #chart {
         border-left: 1px solid #ddd;
-        width: 250px;
-        box-shadow: rgba(0, 0, 0, 0.2) 6px 0px 16px -10px inset;
+        width: 30%;
+        height: calc(100vh - 176px);
         z-index: 1;
       }
 
@@ -41,6 +41,7 @@
         #chart {
           display: none;
         }
+
         #income {
           margin-bottom: 0;
           height: calc(100vh - 176px);
@@ -108,7 +109,7 @@
     <!-- The array is set as the <vaadin-grid>'s "items" property -->
     <vaadin-grid id="income" aria-label="Income" items="[[income]]" active-item="{{activeItem}}" multi-sort>
 
-      <vaadin-grid-column width="5%" hidden>
+      <vaadin-grid-column width="auto" hidden>
         <template class="header">
           <div class="header-cell">
             ID
@@ -117,7 +118,7 @@
         <template>[[item.id]]</template>
       </vaadin-grid-column>
 
-      <vaadin-grid-column width="30%" frozen>
+      <vaadin-grid-column width="20%" frozen>
         <template class="header">
           <vaadin-grid-sorter path="date" direction="desc">
             <div class="header-cell">
@@ -139,7 +140,7 @@
         <template><span class="money">[[_formatMoney(item.amount)]]</span></template>
       </vaadin-grid-column>
 
-      <vaadin-grid-column width="45%">
+      <vaadin-grid-column width="60%">
         <template class="header">
           <vaadin-grid-sorter path="comment">
             <div class="header-cell">
@@ -153,7 +154,7 @@
 
     <paper-fab icon="add" on-tap="_showExpenseEditor" id="add-button"></paper-fab>
     <income-editor id="incomeEditor"></income-editor>
-    <income-chart id="chart"></income-chart>
+    <income-chart id="chart" income='[[income]]'></income-chart>
 
   </template>
 
@@ -174,9 +175,6 @@
                   income: {
                       type: Array,
                       notify: true,
-                      value: function() {
-                          return [];
-                      },
                   },
                   activeItem: {
                       observer: '_activeItemChanged',
@@ -186,6 +184,10 @@
 
           constructor() {
               super();
+              const currencyOptions = {style: 'currency', currency: 'EUR'};
+              const dateOptions = {year: 'numeric', month: 'long'};
+              this.currencyFmt = new Intl.NumberFormat('de-DE', currencyOptions);
+              this.dateFmt = new Intl.DateTimeFormat('en-US', dateOptions);
           }
 
           ready() {
@@ -222,13 +224,13 @@
 
           _formatMoney(money) {
               if (money) {
-                  return money + ' \u20AC';
+                  return this.currencyFmt.format(money);
               }
           }
 
           _formatDate(date) {
               if (date) {
-                  return fecha.format(fecha.parse(date, 'YYYY-MM'), 'MMMM YYYY');
+                  return this.dateFmt.format(new Date(date));
               }
           }
 
@@ -236,10 +238,12 @@
               this.$.income.selectedItems = item ? [item] : [];
               if (item) {
                   this.$.incomeEditor.open(item);
+                  this.$.income.selectedItems = [];
               }
           }
 
           _logged() {
+              // If we login we need to fetch the income from database
               if (this.loggedIn) {
                   this.$.ajax.generateRequest();
               }

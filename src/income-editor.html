@@ -154,9 +154,6 @@
                   income: {
                       type: Object,
                       notify: true,
-                      value: function() {
-                          return {};
-                      },
                   },
                   caption: {
                       type: String,
@@ -193,6 +190,9 @@
                   this.income.date = fecha.format(
                       fecha.parse(this.$.date._inputValue, 'MMMM YYYY'),
                       'YYYY-MM-DD');
+                  if (! this.income.hasOwnProperty('comment')) {
+                      this.income.comment = '';
+                  }
                   this.$.ajax.url = 'php/save_income.php';
                   this.$.ajax.body = JSON.stringify(this.income);
                   this.$.ajax.generateRequest();

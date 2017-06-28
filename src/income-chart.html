@@ -6,12 +6,11 @@
       :host {
         display: block;
         background: #f8f9f9;
-        padding: 20px 24px;
       }
 
       #chart_div {
-        display: flex;
-        flex-direction: column;
+        width: 100%;
+        height: calc(100vh - 176px);
       }
     </style>
 
@@ -28,21 +27,12 @@
 
           static get properties() {
               return {
-                  loggedIn: {
-                      type: Boolean,
-                      notify: true,
-                      observer: '_logged',
-                  },
                   income: {
                       type: Array,
                       notify: true,
-                      value: function() {
-                          return [];
-                      },
+                      observer: '_income',
                   },
-                  activeItem: {
-                      observer: '_activeItemChanged',
-                  },
+                  test: String,
               };
           }
 
@@ -52,30 +42,68 @@
 
           ready() {
               super.ready();
+          }
 
-              const data = google.visualization.arrayToDataTable([
-                  ['City', '2010 Population', '2000 Population'],
-                  ['New York City, NY', 8175000, 8008000],
-                  ['Los Angeles, CA', 3792000, 3694000],
-                  ['Chicago, IL', 2695000, 2896000],
-                  ['Houston, TX', 2099000, 1953000],
-                  ['Philadelphia, PA', 1526000, 1517000]
-              ]);
+          _pad(number, n = 2) {
+              let s = new Array(n).join('0');
+              s += String(number);
+              return s.slice(n * -1);
+          }
+
+          _income() {
+              const accIncome = this.income.reduce(
+                  (accInc, inc) => {
+                      if (inc.date in accInc) {
+                          accInc[inc.date] += inc.amount;
+                          accInc[inc.date] = Number(
+                              accInc[inc.date].toFixed(2)
+                          );
+                      }
+                      else {
+                          accInc[inc.date] = inc.amount;
+                      }
+                      return accInc;
+                  },
+                  {}
+              );
+
+              const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              const thisYear = new Date().getFullYear();
+              const prevYear = Number(thisYear - 1);
+              let table = [['Month', String(thisYear), String(prevYear)]];
+
+              for (let i = 0, tot = monthNamesShort.length; i < tot; i++) {
+                  let month = Number(i) + 1;
+                  let date = `${thisYear}-${this._pad(month)}-01`;
+                  let prevDate = `${prevYear}-${this._pad(month)}-01`;
+                  table.push([monthNamesShort[i],
+                      accIncome[date], accIncome[prevDate]]);
+              }
+
+              const data = google.visualization.arrayToDataTable(table);
 
               const options = {
-                  title: 'Population of Largest U.S. Cities',
-                  chartArea: {width: '50%'},
+                  title: 'Sum Income per month',
                   hAxis: {
-                      title: 'Total Population',
+                      title: 'Euro',
                       minValue: 0,
                   },
+                  backgroundColor: '#f8f9f9',
                   vAxis: {
-                      title: 'City',
+                      title: 'Months',
+                  },
+                  legend: {
+                      position: 'bottom',
                   },
               };
 
               const chart = new google.visualization.BarChart(this.$.chart_div);
               chart.draw(data, options);
+
+              window.addEventListener('resize', function() {
+                  chart.draw(data, options);
+              }, false);
           }
       }
 

@@ -86,7 +86,7 @@
     </app-header>
 
     <div class="content">
-      <iron-pages id="tab-pages" selected="{{tabSelected}}">
+      <iron-pages id="tabPages" selected="{{tabSelected}}">
         <sample-content size="100"></sample-content>
         <income-page logged-in="{{loggedIn}}"></income-page>
         <div>Expenses</div>
@@ -131,6 +131,11 @@
               super.ready();
               this.addEventListener('income-loading', (e) => {
                   this.loading = e.detail;
+              });
+
+              // Fix the chart height in income tab
+              this.addEventListener('iron-select', (e) => {
+                  window.dispatchEvent(new Event('resize'));
               });
           }
 

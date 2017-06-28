@@ -17,6 +17,8 @@
   },
   "globals": {
     "Polymer": true,
-    "fecha": true
+    "Intl": true,
+    "fecha": true,
+    "google": true
   }
 }
