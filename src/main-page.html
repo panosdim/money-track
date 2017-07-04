@@ -13,6 +13,7 @@
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/vaadin-icons/vaadin-icons.html">
 <link rel="import" href="income-page.html">
+<link rel="import" href="expense-page.html">
 
 <dom-module id="main-page">
   <template>
@@ -89,7 +90,7 @@
       <iron-pages id="tabPages" selected="{{tabSelected}}">
         <sample-content size="100"></sample-content>
         <income-page logged-in="{{loggedIn}}"></income-page>
-        <div>Expenses</div>
+        <expense-page logged-in="{{loggedIn}}"></expense-page>
         <sample-content size="50"></sample-content>
       </iron-pages>
     </div>
@@ -120,6 +121,14 @@
                       value: true,
                       notify: true,
                   },
+                  incomeLoading: {
+                      type: Boolean,
+                      value: false,
+                  },
+                  expenseLoading: {
+                      type: Boolean,
+                      value: false,
+                  },
               };
           }
 
@@ -129,8 +138,16 @@
 
           ready() {
               super.ready();
+
+              // Hide or show progress bar
               this.addEventListener('income-loading', (e) => {
-                  this.loading = e.detail;
+                  this.incomeLoading = e.detail;
+                  this.loading = !!(this.incomeLoading || this.expenseLoading);
+              });
+
+              this.addEventListener('expense-loading', (e) => {
+                  this.expenseLoading = e.detail;
+                  this.loading = !!(this.incomeLoading || this.expenseLoading);
               });
 
               // Fix the chart height in income tab

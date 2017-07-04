@@ -34,7 +34,9 @@
     "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^2.0.0",
     "paper-listbox": "PolymerElements/paper-listbox#^2.0.0",
     "vaadin-icons": "^4.1.0",
-    "fecha": "^2.3.1"
+    "fecha": "^2.3.1",
+    "iron-form": "^2.0.0",
+    "vaadin-combo-box": "^2.0.0"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^6.0.0"

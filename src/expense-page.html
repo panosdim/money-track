@@ -4,10 +4,11 @@
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-sorter.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="income-editor.html">
-<link rel="import" href="income-chart.html">
+<link rel="import" href="expense-editor.html">
+<link rel="import" href="expense-chart.html">
 
-<dom-module id="income-page">
+
+<dom-module id="expense-page">
   <template>
     <style>
       :host {
@@ -23,7 +24,7 @@
         z-index: 2;
       }
 
-      #income {
+      #expense {
         flex: 1;
         color: var(--primary-text-color);
         border: 0;
@@ -32,7 +33,7 @@
 
       #chart {
         border-left: 1px solid #ddd;
-        width: 40%;
+        width: 35%;
         height: calc(100vh - 174px);
         z-index: 1;
       }
@@ -42,13 +43,13 @@
           display: none;
         }
 
-        #income {
+        #expense {
           margin-bottom: 0;
           height: calc(100vh - 176px);
         }
       }
 
-      vaadin-grid#income {
+      vaadin-grid#expense {
         font-family: Roboto, sans-serif;
         --divider-color: rgba(0, 0, 0, var(--dark-divider-opacity));
         --vaadin-grid-cell: {
@@ -95,19 +96,19 @@
         text-align: right;
       }
 
-      vaadin-grid#income .numeric {
+      vaadin-grid#expense .numeric {
         text-align: right;
       }
     </style>
 
-    <iron-ajax id="ajax" url="php/get_income.php"
+    <iron-ajax id="ajax" url="php/get_expense.php"
                handle-as="json"
                content-type="application/json;charset=UTF-8"
                on-response="_handleBackendResponse">
     </iron-ajax>
 
     <!-- The array is set as the <vaadin-grid>'s "items" property -->
-    <vaadin-grid id="income" aria-label="Income" items="[[income]]" active-item="{{activeItem}}" multi-sort>
+    <vaadin-grid id="expense" aria-label="Expense" items="[[expense]]" active-item="{{activeItem}}" multi-sort>
 
       <vaadin-grid-column width="auto" hidden>
         <template class="header">
@@ -133,14 +134,25 @@
         <template class="header">
           <vaadin-grid-sorter path="amount" class="numeric">
             <div class="header-cell">
-              Salary
+              Expense
             </div>
           </vaadin-grid-sorter>
         </template>
         <template><span class="money">[[_formatMoney(item.amount)]]</span></template>
       </vaadin-grid-column>
 
-      <vaadin-grid-column width="60%">
+      <vaadin-grid-column width="20%">
+        <template class="header">
+          <vaadin-grid-sorter path="category">
+            <div class="header-cell">
+              Category
+            </div>
+          </vaadin-grid-sorter>
+        </template>
+        <template><span class="money">[[item.category]]</span></template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column width="40%">
         <template class="header">
           <vaadin-grid-sorter path="comment">
             <div class="header-cell">
@@ -152,17 +164,17 @@
       </vaadin-grid-column>
     </vaadin-grid>
 
-    <paper-fab icon="add" on-tap="_showIncomeEditor" id="add-button"></paper-fab>
-    <income-editor id="incomeEditor"></income-editor>
-    <income-chart id="chart" income='[[income]]'></income-chart>
+    <paper-fab icon="add" on-tap="_showExpenseEditor" id="add-button"></paper-fab>
+    <expense-editor id="expenseEditor"></expense-editor>
+    <expense-chart id="chart" expense='[[expense]]'></expense-chart>
 
   </template>
 
   <script>
-      class IncomePage extends Polymer.Element {
+      class ExpensePage extends Polymer.Element {
 
           static get is() {
-              return 'income-page';
+              return 'expense-page';
           }
 
           static get properties() {
@@ -172,7 +184,7 @@
                       notify: true,
                       observer: '_logged',
                   },
-                  income: {
+                  expense: {
                       type: Array,
                       notify: true,
                   },
@@ -185,21 +197,17 @@
           constructor() {
               super();
               const currencyOptions = {style: 'currency', currency: 'EUR'};
-              const dateOptions = {year: 'numeric', month: 'long'};
+              const dateOptions = {year: 'numeric', month: '2-digit', day: '2-digit'};
               this.currencyFmt = new Intl.NumberFormat('de-DE', currencyOptions);
-              this.dateFmt = new Intl.DateTimeFormat('en-US', dateOptions);
+              this.dateFmt = new Intl.DateTimeFormat('el-GR', dateOptions);
           }
 
           ready() {
               super.ready();
 
-              const thisYear = new Date().getFullYear();
-              const prevYear = Number(thisYear - 1);
-              const re = new RegExp(`${thisYear}|${prevYear}.*`);
-
               this.$.ajax.addEventListener('loading-changed', (evt) => {
                   // Notify main-page.html to stop or start the progress bar
-                  const event = new CustomEvent('income-loading',
+                  const event = new CustomEvent('expense-loading',
                       {
                           detail: evt.detail.value,
                           bubbles: true,
@@ -208,36 +216,21 @@
                   this.dispatchEvent(event);
               });
 
-              this.addEventListener('income-saved', (e) => {
-                  let index = this.income.findIndex((el) => {
+              this.addEventListener('expense-saved', (e) => {
+                  let index = this.expense.findIndex((el) => {
                       return el.id === e.detail.id;
                   });
-                  this.income.splice(index, 1);
-                  this.push('income', e.detail);
-
-                  // Check if we need to update the income chart
-                  if (re.test(e.detail.date)) {
-                      this.$.chart.update();
-                  }
+                  this.expense.splice(index, 1);
+                  this.push('expense', e.detail);
               });
 
-              this.addEventListener('income-deleted', (e) => {
-                  let index = this.income.indexOf(e.detail);
-                  this.income.splice(index, 1);
-
-                  // Check if we need to update the income chart
-                  if (re.test(e.detail.date)) {
-                      this.$.chart.update();
-                  }
+              this.addEventListener('expense-deleted', (e) => {
+                  let index = this.expense.indexOf(e.detail);
+                  this.expense.splice(index, 1);
               });
 
-              this.addEventListener('income-added', (e) => {
-                  this.push('income', e.detail);
-
-                  // Check if we need to update the income chart
-                  if (re.test(e.detail.date)) {
-                      this.$.chart.update();
-                  }
+              this.addEventListener('expense-added', (e) => {
+                  this.push('expense', e.detail);
               });
           }
 
@@ -254,32 +247,32 @@
           }
 
           _activeItemChanged(item) {
-              this.$.income.selectedItems = item ? [item] : [];
+              this.$.expense.selectedItems = item ? [item] : [];
               if (item) {
-                  // Send to income editor a copy item not the original
+                  // Send to expense editor a copy item not the original
                   let copyItem = Object.assign({}, item);
-                  this.$.incomeEditor.open(copyItem);
-                  this.$.income.deselectItem(item);
+                  this.$.expenseEditor.open(copyItem);
+                  this.$.expense.deselectItem(item);
                   this.activeItem = null;
               }
           }
 
           _logged() {
-              // If we login we need to fetch the income from database
+              // If we login we need to fetch the expense from database
               if (this.loggedIn) {
                   this.$.ajax.generateRequest();
               }
           }
 
           _handleBackendResponse(evt) {
-              this.income = evt.detail.response;
+              this.expense = evt.detail.response;
           }
 
-          _showIncomeEditor() {
-              this.$.incomeEditor.open({});
+          _showExpenseEditor() {
+              this.$.expenseEditor.open({});
           }
       }
 
-      window.customElements.define(IncomePage.is, IncomePage);
+      window.customElements.define(ExpensePage.is, ExpensePage);
   </script>
 </dom-module>

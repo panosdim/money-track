@@ -41,8 +41,10 @@
     <iron-a11y-keys keys="enter" on-keys-pressed="_logIn"></iron-a11y-keys>
 
     <paper-card heading="Money Track">
+      <!--TODO: Use iron-form-->
       <div class="card-content">
         <form id="loginForm" class="login">
+          <!--TODO: use paper container and iron-input-->
           <paper-input id="username" label="Username" name="username" required auto-validate autocomplete="on"
                        error-message="Username is needed!"></paper-input>
           <paper-input id="password" label="Password" name="password" type="password" required auto-validate

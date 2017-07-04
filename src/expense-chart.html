@@ -1,6 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<dom-module id="income-chart">
+<dom-module id="expense-chart">
   <template>
     <style>
       :host {
@@ -19,15 +19,15 @@
   </template>
 
   <script>
-      class IncomeChart extends Polymer.Element {
+      class ExpenseChart extends Polymer.Element {
 
           static get is() {
-              return 'income-chart';
+              return 'expense-chart';
           }
 
           static get properties() {
               return {
-                  income: {
+                  expense: {
                       type: Array,
                       observer: 'update',
                   },
@@ -57,18 +57,20 @@
           }
 
           update() {
-              const accIncome = this.income.reduce(
-                  (accInc, inc) => {
-                      if (inc.date in accInc) {
-                          accInc[inc.date] += inc.amount;
-                          accInc[inc.date] = Number(
-                              accInc[inc.date].toFixed(2)
+              const accExpense = this.expense.reduce(
+                  (accExp, exp) => {
+                      const re = new RegExp(/\d{4}-\d{2}/);
+                      const date = exp.date.match(re);
+                      if (date in accExp) {
+                          accExp[date] += exp.amount;
+                          accExp[date] = Number(
+                              accExp[date].toFixed(2)
                           );
                       }
                       else {
-                          accInc[inc.date] = inc.amount;
+                          accExp[date] = exp.amount;
                       }
-                      return accInc;
+                      return accExp;
                   },
                   {}
               );
@@ -81,16 +83,16 @@
 
               for (let i = 0, tot = monthNamesShort.length; i < tot; i++) {
                   let month = Number(i) + 1;
-                  let date = `${thisYear}-${this._pad(month)}-01`;
-                  let prevDate = `${prevYear}-${this._pad(month)}-01`;
+                  let date = `${thisYear}-${this._pad(month)}`;
+                  let prevDate = `${prevYear}-${this._pad(month)}`;
                   this.push('table', [monthNamesShort[i],
-                      accIncome[date], accIncome[prevDate]]);
+                      accExpense[date], accExpense[prevDate]]);
               }
 
               const data = google.visualization.arrayToDataTable(this.table);
 
               const options = {
-                  title: 'Sum Income per month',
+                  title: 'Sum Expense per month',
                   hAxis: {
                       title: 'Euro',
                       minValue: 0,
@@ -109,6 +111,6 @@
           }
       }
 
-      window.customElements.define(IncomeChart.is, IncomeChart);
+      window.customElements.define(ExpenseChart.is, ExpenseChart);
   </script>
 </dom-module>

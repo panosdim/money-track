@@ -9,6 +9,7 @@
 <link rel="import" href="../bower_components/vaadin-date-picker/vaadin-date-picker.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
 <link rel="import" href="vaadin-date-picker-theme.html">
 
 <dom-module id="income-editor">
@@ -114,18 +115,20 @@
 
       <div class="wrapper">
         <div class="form">
-          <form id="form">
-            <iron-a11y-keys keys="enter" on-keys-pressed="_save"></iron-a11y-keys>
-            <paper-input name="total" id="total" value="{{income.amount}}" type="number" max="10000" label="Total"
-                         required step="0.01" always-float-label>
-              <div slot="suffix">&euro;</div>
-            </paper-input>
+          <iron-form id="form">
+            <form>
+              <iron-a11y-keys keys="enter" on-keys-pressed="_save"></iron-a11y-keys>
+              <paper-input name="total" id="total" value="{{income.amount}}" type="number" max="10000" label="Total"
+                           required step="0.01" always-float-label>
+                <div slot="suffix">&euro;</div>
+              </paper-input>
 
-            <vaadin-date-picker label="Date" placeholder="YYYY-MM" value="{{income.date}}" id="date" name="date"
-                                required></vaadin-date-picker>
-            <paper-textarea id="comment" name="comment" label="Comment" value="{{income.comment}}"
-                            always-float-label></paper-textarea>
-          </form>
+              <vaadin-date-picker label="Date" placeholder="YYYY-MM" value="{{income.date}}" id="date" name="date"
+                                  required></vaadin-date-picker>
+              <paper-textarea id="comment" name="comment" label="Comment" value="{{income.comment}}"
+                              always-float-label></paper-textarea>
+            </form>
+          </iron-form>
         </div>
       </div>
       <div class="buttons-layout">
@@ -190,9 +193,10 @@
                   this.income.date = fecha.format(
                       fecha.parse(this.$.date._inputValue, 'MMMM YYYY'),
                       'YYYY-MM-DD');
-                  if (! this.income.hasOwnProperty('comment')) {
+                  if (!this.income.hasOwnProperty('comment')) {
                       this.income.comment = '';
                   }
+                  this.income.amount = Number(this.income.amount);
                   this.$.ajax.url = 'php/save_income.php';
                   this.$.ajax.body = JSON.stringify(this.income);
                   this.$.ajax.generateRequest();
@@ -203,11 +207,6 @@
           }
 
           open(income) {
-              if (income.date) {
-                  income.date = fecha.format(
-                      fecha.parse(income.date, 'YYYY-MM'),
-                      'YYYY-MM-DD');
-              }
               this.income = income;
               this.$.delete.hidden = !this.income.id;
               this.$.dialog.open();
@@ -215,7 +214,7 @@
 
           close() {
               this.income = {};
-              this.$.date._inputValue = '';
+              this._clear(this.$.form);
               this.$.dialog.close();
           }
 
@@ -240,12 +239,14 @@
               const inputs = form.getElementsByTagName('paper-input');
               const dates = form.getElementsByTagName('vaadin-date-picker');
               let result = true;
-              for (let i = 0; i < inputs.length; i++) {
+              // TODO: check why iron-form validate is not correct
+
+              for (let i = 0, len = inputs.length; i < len; i++) {
                   if (!inputs[i].validate()) {
                       result = false;
                   }
               }
-              for (let i = 0; i < dates.length; i++) {
+              for (let i = 0, len = dates.length; i < len; i++) {
                   const input = dates[i].shadowRoot
                       .querySelector('vaadin-text-field');
                   const label = input.shadowRoot.querySelector('label');
@@ -261,6 +262,35 @@
                   }
               }
               return result;
+          }
+
+          _clear(form) {
+              this.$.error.innerText = '';
+              this.$.date._inputValue = '';
+
+              const inputs = form.getElementsByTagName('paper-input');
+              const dates = form.getElementsByTagName('vaadin-date-picker');
+              const invalid = form.querySelectorAll('[invalid]');
+
+              for (let i = 0, len = inputs.length; i < len; i++) {
+                  let inv = inputs[i].shadowRoot.querySelector('[invalid]');
+                  inv && inv.removeAttribute('invalid');
+              }
+
+              for (let i = 0, len = dates.length; i < len; i++) {
+                  const input = dates[i].shadowRoot
+                      .querySelector('vaadin-text-field');
+                  const label = input.shadowRoot.querySelector('label');
+                  const div = input.shadowRoot
+                      .querySelector('div[part~="input-field"]');
+
+                  div.removeAttribute('invalid');
+                  label.removeAttribute('invalid');
+              }
+
+              for (let i = 0, len = invalid.length; i < len; i++) {
+                  invalid[i].removeAttribute('invalid');
+              }
           }
 
           _handleBackendResponse(evt) {
