@@ -212,22 +212,46 @@
                   let index = this.income.findIndex((el) => {
                       return el.id === e.detail.id;
                   });
-                  this.income.splice(index, 1);
-                  this.push('income', e.detail);
 
                   // Check if we need to update the income chart
-                  if (re.test(e.detail.date)) {
-                      this.$.chart.update();
+                  if (this.income[index].date !== e.detail.date) {
+                      if (re.test(this.income[index].date)) {
+                          let item = {};
+                          item.date = this.income[index].date;
+                          item.amount = -this.income[index].amount;
+                          this.$.chart.update(item);
+                      }
+                      if (re.test(e.detail.date)) {
+                          let item = {};
+                          item.date = e.detail.date;
+                          item.amount = this.income[index].amount;
+                          this.$.chart.update(item);
+                      }
+                  } else {
+                      if (re.test(e.detail.date)) {
+                          let item = {};
+                          item.date = e.detail.date;
+                          item.amount = e.detail.amount;
+                          this.$.chart.update(item);
+                      }
                   }
+
+                  this.income.splice(index, 1);
+                  this.push('income', e.detail);
               });
 
               this.addEventListener('income-deleted', (e) => {
-                  let index = this.income.indexOf(e.detail);
+                  let index = this.income.findIndex((el) => {
+                      return el.id === e.detail.id;
+                  });
                   this.income.splice(index, 1);
 
                   // Check if we need to update the income chart
                   if (re.test(e.detail.date)) {
-                      this.$.chart.update();
+                      let item = {};
+                      item.date = e.detail.date;
+                      item.amount = -e.detail.amount;
+                      this.$.chart.update(item);
                   }
               });
 
@@ -236,7 +260,10 @@
 
                   // Check if we need to update the income chart
                   if (re.test(e.detail.date)) {
-                      this.$.chart.update();
+                      let item = {};
+                      item.date = e.detail.date;
+                      item.amount = e.detail.amount;
+                      this.$.chart.update(item);
                   }
               });
           }

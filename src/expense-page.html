@@ -205,6 +205,10 @@
           ready() {
               super.ready();
 
+              const thisYear = new Date().getFullYear();
+              const prevYear = Number(thisYear - 1);
+              const re = new RegExp(`${thisYear}|${prevYear}.*`);
+
               this.$.ajax.addEventListener('loading-changed', (evt) => {
                   // Notify main-page.html to stop or start the progress bar
                   const event = new CustomEvent('expense-loading',
@@ -220,17 +224,59 @@
                   let index = this.expense.findIndex((el) => {
                       return el.id === e.detail.id;
                   });
+
+                  // Check if we need to update the expense chart
+                  if (this.expense[index].date !== e.detail.date) {
+                      if (re.test(this.expense[index].date)) {
+                          let item = {};
+                          item.date = this.expense[index].date;
+                          item.amount = -this.expense[index].amount;
+                          this.$.chart.update(item);
+                      }
+                      if (re.test(e.detail.date)) {
+                          let item = {};
+                          item.date = e.detail.date;
+                          item.amount = this.expense[index].amount;
+                          this.$.chart.update(item);
+                      }
+                  } else {
+                      if (re.test(e.detail.date)) {
+                          let item = {};
+                          item.date = e.detail.date;
+                          item.amount = e.detail.amount;
+                          this.$.chart.update(item);
+                      }
+                  }
+
                   this.expense.splice(index, 1);
                   this.push('expense', e.detail);
               });
 
               this.addEventListener('expense-deleted', (e) => {
-                  let index = this.expense.indexOf(e.detail);
+                  let index = this.expense.findIndex((el) => {
+                      return el.id === e.detail.id;
+                  });
                   this.expense.splice(index, 1);
+
+                  // Check if we need to update the expense chart
+                  if (re.test(e.detail.date)) {
+                      let item = {};
+                      item.date = e.detail.date;
+                      item.amount = -e.detail.amount;
+                      this.$.chart.update(item);
+                  }
               });
 
               this.addEventListener('expense-added', (e) => {
                   this.push('expense', e.detail);
+
+                  // Check if we need to update the expense chart
+                  if (re.test(e.detail.date)) {
+                      let item = {};
+                      item.date = e.detail.date;
+                      item.amount = e.detail.amount;
+                      this.$.chart.update(item);
+                  }
               });
           }
 

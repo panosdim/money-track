@@ -208,6 +208,8 @@
                       this.expense.comment = '';
                   }
                   this.expense.amount = Number(this.expense.amount);
+                  this.expense.category = this.$.category.selectedItem.category;
+                  this.expense.category_id = this.$.category.selectedItem.id;
                   this.$.ajax.url = 'php/save_expense.php';
                   this.$.ajax.body = JSON.stringify(this.expense);
                   this.$.ajax.generateRequest();
@@ -219,6 +221,13 @@
 
           open(expense) {
               this.expense = expense;
+              if (this.expense.category) {
+                  let index = this.categories.findIndex((el) => {
+                      return el.category === this.expense.category;
+                  });
+                  this.$.category.value = this.categories[index].id;
+              }
+
               this.$.delete.hidden = !this.expense.id;
               this.$.dialog.open();
           }
@@ -247,9 +256,17 @@
           }
 
           _validate(form) {
+              const inputs = form.getElementsByTagName('paper-input');
               const dates = form.getElementsByTagName('vaadin-date-picker');
               // TODO: check why iron-form validate is not correct
-              let result = form.validate();
+              // We call it for check validity in vaadin-combo-box
+              let result = this.$.category.validate();
+
+              for (let i = 0, len = inputs.length; i < len; i++) {
+                  if (!inputs[i].validate()) {
+                      result = false;
+                  }
+              }
 
               // Validate vaadin-date-picker
               for (let i = 0, len = dates.length; i < len; i++) {
@@ -273,6 +290,7 @@
           _clear(form) {
               this.$.error.innerText = '';
               this.$.date._inputValue = '';
+              this.$.category.value = '';
 
               const inputs = form.getElementsByTagName('paper-input');
               const dates = form.getElementsByTagName('vaadin-date-picker');

@@ -29,7 +29,7 @@
               return {
                   income: {
                       type: Array,
-                      observer: 'update',
+                      observer: '_init',
                   },
                   table: {
                       type: Array,
@@ -56,7 +56,7 @@
               return s.slice(n * -1);
           }
 
-          update() {
+          _init() {
               const accIncome = this.income.reduce(
                   (accInc, inc) => {
                       if (inc.date in accInc) {
@@ -106,6 +106,38 @@
               window.addEventListener('resize', () => {
                   this.chart.draw(data, options);
               }, false);
+          }
+
+          update(item = null) {
+              if (item) {
+                  const date = new Date(item.date);
+                  const index = date.getMonth() + 1;
+                  const thisYear = new Date().getFullYear();
+                  const subindex = date.getFullYear() === thisYear ? 1 : 2;
+                  if (this.table[index][subindex]) {
+                      this.table[index][subindex] += item.amount;
+                  } else {
+                      this.table[index][subindex] = item.amount;
+                  }
+
+                  const data = google.visualization.arrayToDataTable(this.table);
+
+                  const options = {
+                      title: 'Sum Income per month',
+                      hAxis: {
+                          title: 'Euro',
+                          minValue: 0,
+                      },
+                      backgroundColor: '#f8f9f9',
+                      vAxis: {
+                          title: 'Months',
+                      },
+                  };
+
+                  this.chart.draw(data, options);
+              } else {
+                  this._init();
+              }
           }
       }
 
