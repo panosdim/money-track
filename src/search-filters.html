@@ -1,0 +1,176 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<dom-module id="search-filters">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      span {
+        padding: 16px 4px 4px;
+      }
+
+      .row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      #content {
+        display: flex;
+        flex-direction: column;
+      }
+
+      paper-button {
+        font-size: 13px;
+      }
+
+      .header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+      }
+
+      .dates {
+        display: flex;
+      }
+
+      vaadin-combo-box {
+        padding: 0 0;
+      }
+    </style>
+
+
+    <div class="filters">
+      <div class="header">
+        <div class="title">Filter Expenses</div>
+        <paper-button id="clear-button" on-tap="_clearFilters">Clear Filters</paper-button>
+      </div>
+      <div id="content">
+        <div class="row">
+          <div class="dates">
+            <vaadin-date-picker id="from" auto-validate label="From" value="{{filters.start}}"
+                                max="{{filters.end}}"></vaadin-date-picker>
+            <span>–</span>
+            <vaadin-date-picker id="to" auto-validate label="To" value="{{filters.end}}"
+                                min="{{filters.start}}"></vaadin-date-picker>
+          </div>
+          <div>
+            <paper-button raised on-tap="_setDate">Today</paper-button>
+            <paper-button raised on-tap="_setDate">Yesterday</paper-button>
+            <paper-button raised on-tap="_setDate">This Month</paper-button>
+            <paper-button raised on-tap="_setDate">Previous Month</paper-button>
+            <paper-button raised on-tap="_setDate">This Year</paper-button>
+            <paper-button raised on-tap="_setDate">Previous Year</paper-button>
+          </div>
+        </div>
+        <div class="row">
+          <vaadin-combo-box id="category" name="category" label="Category" filtered-items="[[categories]]"
+                            item-label-path="category" item-value-path="category" value="{{filters.category}}" required>
+          </vaadin-combo-box>
+          <div> Total Amount</div>
+        </div>
+      </div>
+    </div>
+    <div id="footer">
+      <content></content>
+    </div>
+  </template>
+
+  <script>
+      class SearchFilters extends Polymer.Element {
+          static get is() {
+              return 'search-filters';
+          }
+
+          static get properties() {
+              return {
+                  filters: {
+                      type: Object,
+                      notify: true,
+                  },
+                  categories: {
+                      type: Array,
+                      notify: true,
+                  },
+              };
+          }
+
+          ready() {
+              super.ready();
+              this.$.from.i18n.formatDate = function(date) {
+                  return moment(date).format('DD/MM/YYYY');
+              };
+              this.$.from.i18n.parseDate = function(dateString) {
+                  return moment(dateString, 'DD/MM/YYYY').toDate();
+              };
+              this.$.to.i18n.formatDate = function(date) {
+                  return moment(date).format('DD/MM/YYYY');
+              };
+              this.$.to.i18n.parseDate = function(dateString) {
+                  return moment(dateString, 'DD/MM/YYYY').toDate();
+              };
+          }
+
+          _clearFilters() {
+              this.set('filters.start', '');
+              this.set('filters.end', '');
+              this.set('filters.category', '');
+          }
+
+          _setDate(e) {
+              switch (e.path[0].innerHTML) {
+                  case 'Today': {
+                      const today = moment().format('YYYY-MM-DD');
+                      this.set('filters.start', today);
+                      this.set('filters.end', today);
+                      break;
+                  }
+                  case 'Yesterday': {
+                      const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
+                      this.set('filters.start', yesterday);
+                      this.set('filters.end', yesterday);
+                      break;
+                  }
+                  case 'This Month': {
+                      const start = moment().startOf('month').format('YYYY-MM-DD');
+                      const end = moment().endOf('month').format('YYYY-MM-DD');
+                      this.set('filters.start', start);
+                      this.set('filters.end', end);
+                      break;
+                  }
+                  case 'Previous Month': {
+                      const start = moment().subtract(1, 'months').startOf('month').format('YYYY-MM-DD');
+                      const end = moment().subtract(1, 'months').endOf('month').format('YYYY-MM-DD');
+                      this.set('filters.start', start);
+                      this.set('filters.end', end);
+                      break;
+                  }
+                  case 'This Year': {
+                      const start = moment().startOf('year').format('YYYY-MM-DD');
+                      const end = moment().endOf('year').format('YYYY-MM-DD');
+                      this.set('filters.start', start);
+                      this.set('filters.end', end);
+                      break;
+                  }
+                  case 'Previous Year': {
+                      const start = moment().subtract(1, 'years').startOf('year').format('YYYY-MM-DD');
+                      const end = moment().subtract(1, 'years').endOf('year').format('YYYY-MM-DD');
+                      this.set('filters.start', start);
+                      this.set('filters.end', end);
+                      break;
+                  }
+              }
+          }
+      }
+
+      window.customElements.define(SearchFilters.is, SearchFilters);
+
+  </script>
+</dom-module>

@@ -224,14 +224,14 @@
                       if (re.test(e.detail.date)) {
                           let item = {};
                           item.date = e.detail.date;
-                          item.amount = this.income[index].amount;
+                          item.amount = e.detail.amount;
                           this.$.chart.update(item);
                       }
                   } else {
                       if (re.test(e.detail.date)) {
                           let item = {};
                           item.date = e.detail.date;
-                          item.amount = e.detail.amount;
+                          item.amount = e.detail.amount - this.income[index].amount;
                           this.$.chart.update(item);
                       }
                   }

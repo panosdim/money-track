@@ -61,9 +61,7 @@
                   (accInc, inc) => {
                       if (inc.date in accInc) {
                           accInc[inc.date] += inc.amount;
-                          accInc[inc.date] = Number(
-                              accInc[inc.date].toFixed(2)
-                          );
+                          accInc[inc.date] = Number(accInc[inc.date].toFixed(2));
                       }
                       else {
                           accInc[inc.date] = inc.amount;
@@ -73,8 +71,7 @@
                   {}
               );
 
-              const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
               const thisYear = new Date().getFullYear();
               const prevYear = Number(thisYear - 1);
               this.table = [['Month', String(thisYear), String(prevYear)]];
@@ -83,8 +80,7 @@
                   let month = Number(i) + 1;
                   let date = `${thisYear}-${this._pad(month)}-01`;
                   let prevDate = `${prevYear}-${this._pad(month)}-01`;
-                  this.push('table', [monthNamesShort[i],
-                      accIncome[date], accIncome[prevDate]]);
+                  this.push('table', [monthNamesShort[i], accIncome[date], accIncome[prevDate]]);
               }
 
               const data = google.visualization.arrayToDataTable(this.table);

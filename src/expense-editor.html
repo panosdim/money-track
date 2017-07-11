@@ -145,10 +145,6 @@
                on-response="_handleBackendResponse"
                on-error="_handleBackendError"></iron-ajax>
 
-    <iron-ajax url="php/get_categories.php" handle-as="json" last-response="{{categories}}" debounce-duration="500"
-               auto>
-    </iron-ajax>
-
     <paper-toast id="toast"></paper-toast>
   </template>
 
@@ -183,10 +179,10 @@
           ready() {
               super.ready();
               this.$.date.i18n.formatDate = function(date) {
-                  return fecha.format(date, 'DD/MM/YYYY');
+                  return moment(date).format('DD/MM/YYYY');
               };
               this.$.date.i18n.parseDate = function(dateString) {
-                  return fecha.parse(dateString, 'YYYY-MM-DD');
+                  return moment(dateString, 'DD/MM/YYYY').toDate();
               };
           }
 
@@ -201,9 +197,7 @@
           _save() {
               this.$.error.innerText = '';
               if (this._validate(this.$.form)) {
-                  this.expense.date = fecha.format(
-                      fecha.parse(this.$.date._inputValue, 'DD/MM/YYYY'),
-                      'YYYY-MM-DD');
+                  this.expense.date = moment(this.$.date._inputValue, 'DD/MM/YYYY').format('YYYY-MM-DD');
                   if (!this.expense.hasOwnProperty('comment')) {
                       this.expense.comment = '';
                   }
@@ -270,11 +264,9 @@
 
               // Validate vaadin-date-picker
               for (let i = 0, len = dates.length; i < len; i++) {
-                  const input = dates[i].shadowRoot
-                      .querySelector('vaadin-text-field');
+                  const input = dates[i].shadowRoot.querySelector('vaadin-text-field');
                   const label = input.shadowRoot.querySelector('label');
-                  const div = input.shadowRoot
-                      .querySelector('div[part~="input-field"]');
+                  const div = input.shadowRoot.querySelector('div[part~="input-field"]');
                   if (!dates[i].checkValidity()) {
                       div.setAttribute('invalid', '');
                       label.setAttribute('invalid', '');
@@ -302,11 +294,9 @@
               }
 
               for (let i = 0, len = dates.length; i < len; i++) {
-                  const input = dates[i].shadowRoot
-                      .querySelector('vaadin-text-field');
+                  const input = dates[i].shadowRoot.querySelector('vaadin-text-field');
                   const label = input.shadowRoot.querySelector('label');
-                  const div = input.shadowRoot
-                      .querySelector('div[part~="input-field"]');
+                  const div = input.shadowRoot.querySelector('div[part~="input-field"]');
 
                   div.removeAttribute('invalid');
                   label.removeAttribute('invalid');

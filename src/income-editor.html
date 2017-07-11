@@ -123,7 +123,7 @@
                 <div slot="suffix">&euro;</div>
               </paper-input>
 
-              <vaadin-date-picker label="Date" placeholder="YYYY-MM" value="{{income.date}}" id="date" name="date"
+              <vaadin-date-picker label="Date" placeholder="MMMM YYYY" value="{{income.date}}" id="date" name="date"
                                   required></vaadin-date-picker>
               <paper-textarea id="comment" name="comment" label="Comment" value="{{income.comment}}"
                               always-float-label></paper-textarea>
@@ -172,10 +172,10 @@
           ready() {
               super.ready();
               this.$.date.i18n.formatDate = function(date) {
-                  return fecha.format(date, 'MMMM YYYY');
+                  return moment(date).format('MMMM YYYY');
               };
               this.$.date.i18n.parseDate = function(dateString) {
-                  return fecha.parse(dateString, 'YYYY-MM');
+                  return moment(dateString, 'MMMM YYYY').toDate();
               };
           }
 
@@ -190,9 +190,7 @@
           _save() {
               this.$.error.innerText = '';
               if (this._validate(this.$.form)) {
-                  this.income.date = fecha.format(
-                      fecha.parse(this.$.date._inputValue, 'MMMM YYYY'),
-                      'YYYY-MM-DD');
+                  this.income.date = moment(this.$.date._inputValue, 'MMMM YYYY').format('YYYY-MM-DD');
                   if (!this.income.hasOwnProperty('comment')) {
                       this.income.comment = '';
                   }
@@ -247,11 +245,9 @@
                   }
               }
               for (let i = 0, len = dates.length; i < len; i++) {
-                  const input = dates[i].shadowRoot
-                      .querySelector('vaadin-text-field');
+                  const input = dates[i].shadowRoot.querySelector('vaadin-text-field');
                   const label = input.shadowRoot.querySelector('label');
-                  const div = input.shadowRoot
-                      .querySelector('div[part~="input-field"]');
+                  const div = input.shadowRoot.querySelector('div[part~="input-field"]');
                   if (!dates[i].checkValidity()) {
                       div.setAttribute('invalid', '');
                       label.setAttribute('invalid', '');
@@ -278,11 +274,9 @@
               }
 
               for (let i = 0, len = dates.length; i < len; i++) {
-                  const input = dates[i].shadowRoot
-                      .querySelector('vaadin-text-field');
+                  const input = dates[i].shadowRoot.querySelector('vaadin-text-field');
                   const label = input.shadowRoot.querySelector('label');
-                  const div = input.shadowRoot
-                      .querySelector('div[part~="input-field"]');
+                  const div = input.shadowRoot.querySelector('div[part~="input-field"]');
 
                   div.removeAttribute('invalid');
                   label.removeAttribute('invalid');

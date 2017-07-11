@@ -6,6 +6,7 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="expense-editor.html">
 <link rel="import" href="expense-chart.html">
+<link rel="import" href="search-filters.html">
 
 
 <dom-module id="expense-page">
@@ -14,7 +15,10 @@
       :host {
         --app-primary-color: #4285f4;
         --app-secondary-color: pink;
+        --header-height: 176px;
+        --filters-height: 140px;
         display: flex;
+        flex-direction: column;
       }
 
       #add-button {
@@ -24,18 +28,33 @@
         z-index: 2;
       }
 
+      #content {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+      }
+
       #expense {
         flex: 1;
         color: var(--primary-text-color);
         border: 0;
-        height: calc(100vh - 176px);
+        height: calc(100vh - var(--header-height) - var(--filters-height));
       }
 
       #chart {
         border-left: 1px solid #ddd;
         width: 35%;
-        height: calc(100vh - 174px);
+        height: calc(100vh - var(--header-height) - var(--filters-height));
         z-index: 1;
+      }
+
+      #searchFilters {
+        flex: 1;
+        max-height: var(--filters-height);
+        z-index: 1;
+        padding-bottom: 10px;
+        padding-left: 10px;
+        padding-right: 10px;
       }
 
       @media (max-width: 900px) {
@@ -45,7 +64,7 @@
 
         #expense {
           margin-bottom: 0;
-          height: calc(100vh - 176px);
+          height: calc(100vh - var(--header-height) - var(--filters-height));
         }
       }
 
@@ -107,6 +126,15 @@
                on-response="_handleBackendResponse">
     </iron-ajax>
 
+    <iron-ajax id="ajaxCategories" url="php/get_categories.php"
+               handle-as="json" last-response="{{categories}}"
+               debounce-duration="500"
+               auto>
+    </iron-ajax>
+
+    <search-filters id="searchFilters" filters="{{filters}}" categories="{{categories}}"></search-filters>
+
+    <div id="content">
     <!-- The array is set as the <vaadin-grid>'s "items" property -->
     <vaadin-grid id="expense" aria-label="Expense" items="[[expense]]" active-item="{{activeItem}}" multi-sort>
 
@@ -165,8 +193,9 @@
     </vaadin-grid>
 
     <paper-fab icon="add" on-tap="_showExpenseEditor" id="add-button"></paper-fab>
-    <expense-editor id="expenseEditor"></expense-editor>
+    <expense-editor id="expenseEditor" categories="{{categories}}"></expense-editor>
     <expense-chart id="chart" expense='[[expense]]'></expense-chart>
+    </div>
 
   </template>
 
@@ -184,6 +213,17 @@
                       notify: true,
                       observer: '_logged',
                   },
+                  filters: {
+                      type: Object,
+                      value: function() {
+                          return {
+                              start: '',
+                              end: '',
+                              category: '',
+                          };
+                      },
+                      notify: true,
+                  },
                   expense: {
                       type: Array,
                       notify: true,
@@ -192,6 +232,12 @@
                       observer: '_activeItemChanged',
                   },
               };
+          }
+
+          static get observers() {
+              return [
+                  '_filtersChanged(filters.*)',
+              ];
           }
 
           constructor() {
@@ -236,14 +282,14 @@
                       if (re.test(e.detail.date)) {
                           let item = {};
                           item.date = e.detail.date;
-                          item.amount = this.expense[index].amount;
+                          item.amount = e.detail.amount;
                           this.$.chart.update(item);
                       }
                   } else {
                       if (re.test(e.detail.date)) {
                           let item = {};
                           item.date = e.detail.date;
-                          item.amount = e.detail.amount;
+                          item.amount = e.detail.amount - this.expense[index].amount;
                           this.$.chart.update(item);
                       }
                   }
@@ -278,6 +324,11 @@
                       this.$.chart.update(item);
                   }
               });
+
+              window.addEventListener('resize', () => {
+                  const height = this.$.searchFilters.scrollHeight + 10;
+                  this.$.searchFilters.style.maxHeight = height + 'px';
+              }, false);
           }
 
           _formatMoney(money) {
@@ -303,10 +354,15 @@
               }
           }
 
+          _filtersChanged() {
+              console.log(this.filters);
+          }
+
           _logged() {
               // If we login we need to fetch the expense from database
               if (this.loggedIn) {
                   this.$.ajax.generateRequest();
+                  this.$.ajaxCategories.generateRequest();
               }
           }
 

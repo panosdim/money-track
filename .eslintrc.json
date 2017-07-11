@@ -13,12 +13,13 @@
     "brace-style": "off",
     "new-cap": ["error", { "capIsNewExceptions": ["Polymer"] }],
     "no-var": "off",
-    "require-jsdoc": "off"
+    "require-jsdoc": "off",
+    "max-len": ["error", 120]
   },
   "globals": {
     "Polymer": true,
     "Intl": true,
-    "fecha": true,
+    "moment": true,
     "google": true
   }
 }

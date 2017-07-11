@@ -10,7 +10,7 @@
 
       #chart_div {
         width: 100%;
-        height: calc(100vh - 176px);
+        height: calc(100vh - var(--header-height) - var(--filters-height));
       }
     </style>
 
@@ -63,9 +63,7 @@
                       const date = exp.date.match(re);
                       if (date in accExp) {
                           accExp[date] += exp.amount;
-                          accExp[date] = Number(
-                              accExp[date].toFixed(2)
-                          );
+                          accExp[date] = Number(accExp[date].toFixed(2));
                       }
                       else {
                           accExp[date] = exp.amount;
@@ -75,8 +73,7 @@
                   {}
               );
 
-              const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
               const thisYear = new Date().getFullYear();
               const prevYear = Number(thisYear - 1);
               this.table = [['Month', String(thisYear), String(prevYear)]];
@@ -85,8 +82,7 @@
                   let month = Number(i) + 1;
                   let date = `${thisYear}-${this._pad(month)}`;
                   let prevDate = `${prevYear}-${this._pad(month)}`;
-                  this.push('table', [monthNamesShort[i],
-                      accExpense[date], accExpense[prevDate]]);
+                  this.push('table', [monthNamesShort[i], accExpense[date], accExpense[prevDate]]);
               }
 
               const data = google.visualization.arrayToDataTable(this.table);
