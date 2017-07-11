@@ -44,6 +44,10 @@
       vaadin-combo-box {
         padding: 0 0;
       }
+
+      #clear-button {
+        color: #00b4f0;
+      }
     </style>
 
 
@@ -74,7 +78,7 @@
           <vaadin-combo-box id="category" name="category" label="Category" filtered-items="[[categories]]"
                             item-label-path="category" item-value-path="category" value="{{filters.category}}" required>
           </vaadin-combo-box>
-          <div> Total Amount</div>
+          <div>Total Amount: [[total]] &euro;</div>
         </div>
       </div>
     </div>
@@ -99,6 +103,10 @@
                       type: Array,
                       notify: true,
                   },
+                  total: {
+                      type: Number,
+                      notify: true,
+                  },
               };
           }
 
@@ -119,37 +127,32 @@
           }
 
           _clearFilters() {
-              this.set('filters.start', '');
-              this.set('filters.end', '');
-              this.set('filters.category', '');
+              this.set('filters', {'start': '', 'end': '', 'category': ''});
+              this.total = 0.00;
           }
 
           _setDate(e) {
               switch (e.path[0].innerHTML) {
                   case 'Today': {
                       const today = moment().format('YYYY-MM-DD');
-                      this.set('filters.start', today);
-                      this.set('filters.end', today);
+                      this.set('filters', {'start': today, 'end': today, 'category': this.filters.category});
                       break;
                   }
                   case 'Yesterday': {
                       const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
-                      this.set('filters.start', yesterday);
-                      this.set('filters.end', yesterday);
+                      this.set('filters', {'start': yesterday, 'end': yesterday, 'category': this.filters.category});
                       break;
                   }
                   case 'This Month': {
                       const start = moment().startOf('month').format('YYYY-MM-DD');
                       const end = moment().endOf('month').format('YYYY-MM-DD');
-                      this.set('filters.start', start);
-                      this.set('filters.end', end);
+                      this.set('filters', {'start': start, 'end': end, 'category': this.filters.category});
                       break;
                   }
                   case 'Previous Month': {
                       const start = moment().subtract(1, 'months').startOf('month').format('YYYY-MM-DD');
                       const end = moment().subtract(1, 'months').endOf('month').format('YYYY-MM-DD');
-                      this.set('filters.start', start);
-                      this.set('filters.end', end);
+                      this.set('filters', {'start': start, 'end': end, 'category': this.filters.category});
                       break;
                   }
                   case 'This Year': {
@@ -162,8 +165,7 @@
                   case 'Previous Year': {
                       const start = moment().subtract(1, 'years').startOf('year').format('YYYY-MM-DD');
                       const end = moment().subtract(1, 'years').endOf('year').format('YYYY-MM-DD');
-                      this.set('filters.start', start);
-                      this.set('filters.end', end);
+                      this.set('filters', {'start': start, 'end': end, 'category': this.filters.category});
                       break;
                   }
               }

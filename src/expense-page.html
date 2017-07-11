@@ -132,69 +132,71 @@
                auto>
     </iron-ajax>
 
-    <search-filters id="searchFilters" filters="{{filters}}" categories="{{categories}}"></search-filters>
+    <search-filters id="searchFilters" filters="{{filters}}" categories="{{categories}}"
+                    total="{{total}}"></search-filters>
 
     <div id="content">
-    <!-- The array is set as the <vaadin-grid>'s "items" property -->
-    <vaadin-grid id="expense" aria-label="Expense" items="[[expense]]" active-item="{{activeItem}}" multi-sort>
+      <!-- The array is set as the <vaadin-grid>'s "items" property -->
+      <vaadin-grid id="expense" aria-label="Expense" items="[[_filteredExpenses]]" active-item="{{activeItem}}"
+                   multi-sort>
 
-      <vaadin-grid-column width="auto" hidden>
-        <template class="header">
-          <div class="header-cell">
-            ID
-          </div>
-        </template>
-        <template>[[item.id]]</template>
-      </vaadin-grid-column>
-
-      <vaadin-grid-column width="20%" frozen>
-        <template class="header">
-          <vaadin-grid-sorter path="date" direction="desc">
+        <vaadin-grid-column width="auto" hidden>
+          <template class="header">
             <div class="header-cell">
-              Date
+              ID
             </div>
-          </vaadin-grid-sorter>
-        </template>
-        <template>[[_formatDate(item.date)]]</template>
-      </vaadin-grid-column>
+          </template>
+          <template>[[item.id]]</template>
+        </vaadin-grid-column>
 
-      <vaadin-grid-column width="20%">
-        <template class="header">
-          <vaadin-grid-sorter path="amount" class="numeric">
-            <div class="header-cell">
-              Expense
-            </div>
-          </vaadin-grid-sorter>
-        </template>
-        <template><span class="money">[[_formatMoney(item.amount)]]</span></template>
-      </vaadin-grid-column>
+        <vaadin-grid-column width="20%" frozen>
+          <template class="header">
+            <vaadin-grid-sorter path="date" direction="desc">
+              <div class="header-cell">
+                Date
+              </div>
+            </vaadin-grid-sorter>
+          </template>
+          <template>[[_formatDate(item.date)]]</template>
+        </vaadin-grid-column>
 
-      <vaadin-grid-column width="20%">
-        <template class="header">
-          <vaadin-grid-sorter path="category">
-            <div class="header-cell">
-              Category
-            </div>
-          </vaadin-grid-sorter>
-        </template>
-        <template><span class="money">[[item.category]]</span></template>
-      </vaadin-grid-column>
+        <vaadin-grid-column width="20%">
+          <template class="header">
+            <vaadin-grid-sorter path="amount" class="numeric">
+              <div class="header-cell">
+                Expense
+              </div>
+            </vaadin-grid-sorter>
+          </template>
+          <template><span class="money">[[_formatMoney(item.amount)]]</span></template>
+        </vaadin-grid-column>
 
-      <vaadin-grid-column width="40%">
-        <template class="header">
-          <vaadin-grid-sorter path="comment">
-            <div class="header-cell">
-              Comment
-            </div>
-          </vaadin-grid-sorter>
-        </template>
-        <template>[[item.comment]]</template>
-      </vaadin-grid-column>
-    </vaadin-grid>
+        <vaadin-grid-column width="20%">
+          <template class="header">
+            <vaadin-grid-sorter path="category">
+              <div class="header-cell">
+                Category
+              </div>
+            </vaadin-grid-sorter>
+          </template>
+          <template><span class="money">[[item.category]]</span></template>
+        </vaadin-grid-column>
 
-    <paper-fab icon="add" on-tap="_showExpenseEditor" id="add-button"></paper-fab>
-    <expense-editor id="expenseEditor" categories="{{categories}}"></expense-editor>
-    <expense-chart id="chart" expense='[[expense]]'></expense-chart>
+        <vaadin-grid-column width="40%">
+          <template class="header">
+            <vaadin-grid-sorter path="comment">
+              <div class="header-cell">
+                Comment
+              </div>
+            </vaadin-grid-sorter>
+          </template>
+          <template>[[item.comment]]</template>
+        </vaadin-grid-column>
+      </vaadin-grid>
+
+      <paper-fab icon="add" on-tap="_showExpenseEditor" id="add-button"></paper-fab>
+      <expense-editor id="expenseEditor" categories="{{categories}}"></expense-editor>
+      <expense-chart id="chart" expense='[[expense]]'></expense-chart>
     </div>
 
   </template>
@@ -224,12 +226,23 @@
                       },
                       notify: true,
                   },
+                  _filteredExpenses: {
+                      type: Array,
+                      value: function() {
+                          return [];
+                      },
+                  },
                   expense: {
                       type: Array,
                       notify: true,
                   },
                   activeItem: {
                       observer: '_activeItemChanged',
+                  },
+                  total: {
+                      type: Number,
+                      notify: true,
+                      value: 0.00,
                   },
               };
           }
@@ -296,6 +309,7 @@
 
                   this.expense.splice(index, 1);
                   this.push('expense', e.detail);
+                  this._filtersChanged();
               });
 
               this.addEventListener('expense-deleted', (e) => {
@@ -303,6 +317,7 @@
                       return el.id === e.detail.id;
                   });
                   this.expense.splice(index, 1);
+                  this._filtersChanged();
 
                   // Check if we need to update the expense chart
                   if (re.test(e.detail.date)) {
@@ -315,6 +330,7 @@
 
               this.addEventListener('expense-added', (e) => {
                   this.push('expense', e.detail);
+                  this._filtersChanged();
 
                   // Check if we need to update the expense chart
                   if (re.test(e.detail.date)) {
@@ -355,7 +371,52 @@
           }
 
           _filtersChanged() {
-              console.log(this.filters);
+              const empty = {start: '', end: '', category: ''};
+
+              if (this.expense === undefined) {
+                  return;
+              }
+              if (JSON.stringify(empty) === JSON.stringify(this.filters)) {
+                  this._filteredExpenses = this.expense;
+                  return;
+              }
+
+              const category = this.filters.category;
+              const start = this.filters.start;
+              const end = this.filters.end;
+
+              // Filter
+              this._filteredExpenses = this.expense
+                  .filter((exp) => {
+                      return !(category && exp.category.toUpperCase().indexOf(category.toUpperCase()) < 0);
+                  })
+                  .filter((exp) => {
+                      if (start) {
+                          let startDate = moment(start);
+                          return (startDate.isValid() && moment(exp.date).isSameOrAfter(startDate));
+                      } else {
+                          return true;
+                      }
+                  })
+                  .filter((exp) => {
+                      if (end) {
+                          let endDate = moment(end);
+                          return (endDate.isValid() && moment(exp.date).isSameOrBefore(endDate));
+                      } else {
+                          return true;
+                      }
+                  });
+
+              // Calculate Total
+              this._calculateTotal();
+          }
+
+          _calculateTotal() {
+              let total = 0;
+              this._filteredExpenses.forEach((item) => {
+                total += Number(item.amount);
+              });
+              this.total = total.toFixed(2);
           }
 
           _logged() {
@@ -368,6 +429,7 @@
 
           _handleBackendResponse(evt) {
               this.expense = evt.detail.response;
+              this._filtersChanged();
           }
 
           _showExpenseEditor() {
