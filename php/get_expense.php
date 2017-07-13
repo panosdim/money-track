@@ -14,8 +14,8 @@ require_once 'database.php';
 
 // Find the income of the specific user id
 $stmt = $db->prepare(
-    'SELECT expenses.`id`, `amount`, `comment`, `date`, categories.`category` 
-               FROM expenses INNER JOIN categories ON expenses.`category` = categories.`id` 
+    'SELECT expenses.`id`, `amount`, `comment`, `date`, categories.`category`
+               FROM expenses INNER JOIN categories ON expenses.`category` = categories.`id`
                WHERE expenses.`user_id` = ? ORDER BY `date` DESC'
 );
 

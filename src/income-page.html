@@ -13,6 +13,7 @@
       :host {
         --app-primary-color: #4285f4;
         --app-secondary-color: pink;
+        --header-height: 176px;
         display: flex;
       }
 
@@ -27,13 +28,13 @@
         flex: 1;
         color: var(--primary-text-color);
         border: 0;
-        height: calc(100vh - 176px);
+        height: calc(100vh - var(--header-height));
       }
 
       #chart {
         border-left: 1px solid #ddd;
         width: 40%;
-        height: calc(100vh - 174px);
+        height: calc(100vh - var(--header-height));
         z-index: 1;
       }
 
@@ -44,7 +45,7 @@
 
         #income {
           margin-bottom: 0;
-          height: calc(100vh - 176px);
+          height: calc(100vh - var(--header-height));
         }
       }
 

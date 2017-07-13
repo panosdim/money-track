@@ -16,7 +16,7 @@
         --app-primary-color: #4285f4;
         --app-secondary-color: pink;
         --header-height: 176px;
-        --filters-height: 140px;
+        --filters-height: 146px;
         display: flex;
         flex-direction: column;
       }
@@ -124,12 +124,6 @@
                handle-as="json"
                content-type="application/json;charset=UTF-8"
                on-response="_handleBackendResponse">
-    </iron-ajax>
-
-    <iron-ajax id="ajaxCategories" url="php/get_categories.php"
-               handle-as="json" last-response="{{categories}}"
-               debounce-duration="500"
-               auto>
     </iron-ajax>
 
     <search-filters id="searchFilters" filters="{{filters}}" categories="{{categories}}"
@@ -244,6 +238,10 @@
                       notify: true,
                       value: 0.00,
                   },
+                  categories: {
+                      type: Array,
+                      notify: true,
+                  },
               };
           }
 
@@ -307,7 +305,7 @@
                       }
                   }
 
-                  this.expense.splice(index, 1);
+                  this.splice('expense', index, 1);
                   this.push('expense', e.detail);
                   this._filtersChanged();
               });
@@ -316,7 +314,7 @@
                   let index = this.expense.findIndex((el) => {
                       return el.id === e.detail.id;
                   });
-                  this.expense.splice(index, 1);
+                  this.splice('expense', index, 1);
                   this._filtersChanged();
 
                   // Check if we need to update the expense chart
@@ -371,50 +369,48 @@
           }
 
           _filtersChanged() {
-              const empty = {start: '', end: '', category: ''};
-
               if (this.expense === undefined) {
-                  return;
-              }
-              if (JSON.stringify(empty) === JSON.stringify(this.filters)) {
-                  this._filteredExpenses = this.expense;
                   return;
               }
 
               const category = this.filters.category;
               const start = this.filters.start;
               const end = this.filters.end;
+              this.set('_filteredExpenses', []);
+              let filteredExp = this.expense;
+              this.total = 0.00;
 
               // Filter
-              this._filteredExpenses = this.expense
-                  .filter((exp) => {
-                      return !(category && exp.category.toUpperCase().indexOf(category.toUpperCase()) < 0);
-                  })
-                  .filter((exp) => {
-                      if (start) {
-                          let startDate = moment(start);
-                          return (startDate.isValid() && moment(exp.date).isSameOrAfter(startDate));
-                      } else {
-                          return true;
-                      }
-                  })
-                  .filter((exp) => {
-                      if (end) {
-                          let endDate = moment(end);
-                          return (endDate.isValid() && moment(exp.date).isSameOrBefore(endDate));
-                      } else {
-                          return true;
-                      }
+              if (category) {
+                  filteredExp = filteredExp.filter((exp) => {
+                      return !(exp.category.toUpperCase().indexOf(category.toUpperCase()) < 0);
                   });
+              }
+              if (start) {
+                  filteredExp = filteredExp.filter((exp) => {
+                      let startDate = moment(start);
+                      return (startDate.isValid() && moment(exp.date).isSameOrAfter(startDate));
+                  });
+              }
+              if (end) {
+                  filteredExp = filteredExp.filter((exp) => {
+                      let endDate = moment(end);
+                      return (endDate.isValid() && moment(exp.date).isSameOrBefore(endDate));
+                  });
+              }
 
-              // Calculate Total
-              this._calculateTotal();
+              this._filteredExpenses = filteredExp;
+
+              if (category || start || end) {
+                  // Calculate Total
+                  this._calculateTotal();
+              }
           }
 
           _calculateTotal() {
               let total = 0;
               this._filteredExpenses.forEach((item) => {
-                total += Number(item.amount);
+                  total += Number(item.amount);
               });
               this.total = total.toFixed(2);
           }
@@ -423,7 +419,13 @@
               // If we login we need to fetch the expense from database
               if (this.loggedIn) {
                   this.$.ajax.generateRequest();
-                  this.$.ajaxCategories.generateRequest();
+              }
+          }
+
+          reload() {
+              if (this.loggedIn) {
+                  this.$.ajax.generateRequest();
+                  this._filtersChanged();
               }
           }
 

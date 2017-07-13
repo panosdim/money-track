@@ -14,6 +14,8 @@
 <link rel="import" href="../bower_components/vaadin-icons/vaadin-icons.html">
 <link rel="import" href="income-page.html">
 <link rel="import" href="expense-page.html">
+<link rel="import" href="categories-page.html">
+
 
 <dom-module id="main-page">
   <template>
@@ -67,7 +69,6 @@
       paper-progress {
         width: 100%;
       }
-
     </style>
 
     <app-header fixed>
@@ -90,12 +91,18 @@
       <iron-pages id="tabPages" selected="{{tabSelected}}">
         <sample-content size="100"></sample-content>
         <income-page logged-in="{{loggedIn}}"></income-page>
-        <expense-page logged-in="{{loggedIn}}"></expense-page>
-        <sample-content size="50"></sample-content>
+        <expense-page id="expensePage" logged-in="{{loggedIn}}" categories="{{categories}}"></expense-page>
+        <categories-page categories="{{categories}}"></categories-page>
       </iron-pages>
     </div>
 
     <iron-ajax id="ajax" handle-as="json" method="GET"></iron-ajax>
+
+    <iron-ajax id="ajaxCategories" url="php/get_categories.php"
+               handle-as="json" last-response="{{categories}}"
+               debounce-duration="500"
+               auto>
+    </iron-ajax>
   </template>
 
   <script>
@@ -110,6 +117,7 @@
                   loggedIn: {
                       type: Boolean,
                       notify: true,
+                      observer: '_logged',
                   },
                   tabSelected: {
                       type: Number,
@@ -128,6 +136,10 @@
                   expenseLoading: {
                       type: Boolean,
                       value: false,
+                  },
+                  categories: {
+                      type: Array,
+                      notify: true,
                   },
               };
           }
@@ -150,10 +162,21 @@
                   this.loading = !!(this.incomeLoading || this.expenseLoading);
               });
 
+              this.addEventListener('expense-reload', (e) => {
+                  this.$.expensePage.reload();
+              });
+
               // Fix the chart height in income tab
               this.addEventListener('iron-select', (e) => {
                   window.dispatchEvent(new Event('resize'));
               });
+          }
+
+          _logged() {
+              // If we login we need to fetch the expense from database
+              if (this.loggedIn) {
+                  this.$.ajaxCategories.generateRequest();
+              }
           }
 
           _logout() {

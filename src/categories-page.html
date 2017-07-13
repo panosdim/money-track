@@ -1,0 +1,172 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="category-editor.html">
+
+
+<dom-module id="categories-page">
+  <template>
+    <style>
+      :host {
+        --header-height: 176px;
+      }
+
+      #add-button {
+        position: absolute;
+        right: 32px;
+        bottom: 32px;
+        z-index: 2;
+      }
+
+      #content {
+        display: flex;
+        justify-content: space-between;
+        flex-flow: row wrap;
+        overflow-y: scroll;
+        height: calc(100vh - var(--header-height));
+      }
+
+      paper-card {
+        width: 200px;
+        margin: 10px;
+      }
+
+      div.actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .header {
+        @apply(--paper-font-title);
+        text-align: center;
+      }
+
+      #toast[error] {
+        --paper-toast-background-color: red;
+      }
+
+      #toast[success] {
+        --paper-toast-background-color: green;
+      }
+    </style>
+    <div id="content">
+      <template is="dom-repeat" items="{{categories}}">
+        <paper-card>
+          <div class="card-content">
+            <div class="header">{{item.category}}</div>
+          </div>
+          <div class="card-actions">
+            <div class="actions">
+              <paper-icon-button icon="icons:create" on-tap="_showCategoryEditor"></paper-icon-button>
+              <paper-icon-button icon="icons:delete" on-tap="_deleteCategory"></paper-icon-button>
+            </div>
+          </div>
+        </paper-card>
+      </template>
+
+      <category-editor id="categoryEditor"></category-editor>
+      <paper-fab icon="add" on-tap="_showCategoryEditor" id="add-button"></paper-fab>
+    </div>
+    <iron-ajax id="ajax" handle-as="json" method="POST" content-type="application/json;charset=UTF-8"
+               on-response="_handleBackendResponse"
+               on-error="_handleBackendError"></iron-ajax>
+    <paper-toast id="toast"></paper-toast>
+  </template>
+
+  <script>
+      class CategoriesPage extends Polymer.Element {
+
+          static get is() {
+              return 'categories-page';
+          }
+
+          static get properties() {
+              return {
+                  categories: {
+                      type: Array,
+                      notify: true,
+                  },
+              };
+          }
+
+          constructor() {
+              super();
+          }
+
+          ready() {
+              super.ready();
+
+              this.addEventListener('category-saved', (e) => {
+                  let index = this.categories.findIndex((el) => {
+                      return el.id === e.detail.id;
+                  });
+                  this.set('categories.' + index, e.detail);
+
+                  // Notify main-page.html to update the expense table
+                  const event = new CustomEvent('expense-reload',
+                      {
+                          detail: true,
+                          bubbles: true,
+                          composed: true,
+                      });
+                  this.dispatchEvent(event);
+              });
+
+              this.addEventListener('category-added', (e) => {
+                  this.push('categories', e.detail);
+              });
+          }
+
+          _showCategoryEditor(e) {
+              if (e.model) {
+                  // Send to category editor a copy item not the original
+                  let copyItem = Object.assign({}, e.model.item);
+                  this.$.categoryEditor.open(copyItem);
+              } else {
+                  this.$.categoryEditor.open({});
+              }
+          }
+
+          _deleteCategory(e) {
+              this.$.ajax.url = 'php/delete_category.php';
+              this.$.ajax.body = JSON.stringify(e.model.item);
+              this.$.ajax.generateRequest();
+          }
+
+          _handleBackendResponse(evt) {
+              const rsp = evt.detail.response;
+              if (rsp && rsp.status) {
+                  if (rsp.status === 'error') {
+                      this.$.toast.removeAttribute('success');
+                      this.$.toast.setAttribute('error', '');
+                  } else {
+                      this.$.toast.removeAttribute('error');
+                      this.$.toast.setAttribute('success', '');
+
+                      let index = this.categories.findIndex((el) => {
+                          return el.id === rsp.item.id;
+                      });
+
+                      this.splice('categories', index, 1);
+                  }
+                  this.$.toast.show(rsp.message);
+              } else {
+                  this.$.toast.removeAttribute('success');
+                  this.$.toast.setAttribute('error', '');
+                  this.$.toast.show('No response');
+              }
+          }
+
+          _handleBackendError() {
+              this.$.toast.show('Error Contacting Server');
+          }
+      }
+
+      window.customElements.define(CategoriesPage.is, CategoriesPage);
+  </script>
+</dom-module>

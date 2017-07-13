@@ -236,17 +236,6 @@
               this.$.ajax.url = 'php/delete_expense.php';
               this.$.ajax.body = JSON.stringify(this.expense);
               this.$.ajax.generateRequest();
-
-              // Notify expense-page.html to update the expense table
-              const event = new CustomEvent('expense-deleted',
-                  {
-                      detail: this.expense,
-                      bubbles: true,
-                      composed: true,
-                  });
-              this.dispatchEvent(event);
-
-              this.close();
           }
 
           _validate(form) {
@@ -317,9 +306,9 @@
                       this.$.toast.removeAttribute('error');
                       this.$.toast.setAttribute('success', '');
 
-                      // Notify expense-page.html to update the expense table
-                      if (this.expense.id) {
-                          const event = new CustomEvent('expense-saved',
+                      if (rsp.operation && rsp.operation === 'DELETE') {
+                          // Notify expense-page.html to update the expense table
+                          const event = new CustomEvent('expense-deleted',
                               {
                                   detail: this.expense,
                                   bubbles: true,
@@ -327,14 +316,25 @@
                               });
                           this.dispatchEvent(event);
                       } else {
-                          this.expense.id = rsp.id;
-                          const event = new CustomEvent('expense-added',
-                              {
-                                  detail: this.expense,
-                                  bubbles: true,
-                                  composed: true,
-                              });
-                          this.dispatchEvent(event);
+                          // Notify expense-page.html to update the expense table
+                          if (this.expense.id) {
+                              const event = new CustomEvent('expense-saved',
+                                  {
+                                      detail: this.expense,
+                                      bubbles: true,
+                                      composed: true,
+                                  });
+                              this.dispatchEvent(event);
+                          } else {
+                              this.expense.id = rsp.id;
+                              const event = new CustomEvent('expense-added',
+                                  {
+                                      detail: this.expense,
+                                      bubbles: true,
+                                      composed: true,
+                                  });
+                              this.dispatchEvent(event);
+                          }
                       }
 
                       this.close();
