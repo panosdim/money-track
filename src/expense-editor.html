@@ -125,11 +125,15 @@
               </paper-input>
 
               <vaadin-date-picker label="Date" placeholder="DD/MM/YYYY" value="{{expense.date}}" id="date" name="date"
-                                  auto-validate required></vaadin-date-picker>
-              <vaadin-combo-box id="category" name="category" label="Category" filtered-items="[[categories]]"
-                                item-label-path="category" item-value-path="id" required></vaadin-combo-box>
+                                  auto-validate required>
+              </vaadin-date-picker>
+              <vaadin-combo-box id="category" name="category" label="Category" filtered-items="[[items]]"
+                                item-label-path="category" item-value-path="id" on-filter-changed="_filterChanged"
+                                required>
+              </vaadin-combo-box>
               <paper-textarea id="comment" name="comment" label="Comment" value="{{expense.comment}}"
-                              always-float-label></paper-textarea>
+                              always-float-label>
+              </paper-textarea>
             </form>
           </iron-form>
         </div>
@@ -169,7 +173,17 @@
                       type: Array,
                       notify: true,
                   },
+                  items: {
+                      type: Array,
+                      notify: true,
+                  },
               };
+          }
+
+          static get observers() {
+              return [
+                  '_updateCategories(categories.*)',
+              ];
           }
 
           constructor() {
@@ -192,6 +206,21 @@
               } else {
                   return 'Add Expense';
               }
+          }
+
+          _updateCategories() {
+              this.set('items', []);
+              this.items = this.categories;
+          }
+
+          _filterChanged(e) {
+              if (this.categories === undefined) {
+                  return;
+              }
+              // case-insensitive starts-with filtering
+              this.items = this.categories.filter((cat) => {
+                  return cat.category.toUpperCase().startsWith(e.detail.value.toUpperCase());
+              });
           }
 
           _save() {
