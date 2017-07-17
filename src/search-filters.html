@@ -75,8 +75,9 @@
           </div>
         </div>
         <div class="row">
-          <vaadin-combo-box id="category" name="category" label="Category" filtered-items="[[categories]]"
-                            item-label-path="category" item-value-path="category" value="{{filters.category}}" required>
+          <vaadin-combo-box id="category" name="category" label="Category" filtered-items="[[items]]"
+                            item-label-path="category" item-value-path="category" value="{{filters.category}}"
+                            on-filter-changed="_filterChanged" required>
           </vaadin-combo-box>
           <div>Total Amount: [[total]] &euro;</div>
         </div>
@@ -107,7 +108,17 @@
                       type: Number,
                       notify: true,
                   },
+                  items: {
+                      type: Array,
+                      notify: true,
+                  },
               };
+          }
+
+          static get observers() {
+              return [
+                  '_updateCategories(categories.*)',
+              ];
           }
 
           ready() {
@@ -124,6 +135,21 @@
               this.$.to.i18n.parseDate = function(dateString) {
                   return moment(dateString, 'DD/MM/YYYY').toDate();
               };
+          }
+
+          _updateCategories() {
+              this.set('items', []);
+              this.items = this.categories;
+          }
+
+          _filterChanged(e) {
+              if (this.categories === undefined) {
+                  return;
+              }
+              // case-insensitive starts-with filtering
+              this.items = this.categories.filter((cat) => {
+                  return cat.category.toUpperCase().startsWith(e.detail.value.toUpperCase());
+              });
           }
 
           _clearFilters() {
