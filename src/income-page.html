@@ -101,12 +101,6 @@
       }
     </style>
 
-    <iron-ajax id="ajax" url="php/get_income.php"
-               handle-as="json"
-               content-type="application/json;charset=UTF-8"
-               on-response="_handleBackendResponse">
-    </iron-ajax>
-
     <!-- The array is set as the <vaadin-grid>'s "items" property -->
     <vaadin-grid id="income" aria-label="Income" items="[[income]]" active-item="{{activeItem}}" multi-sort>
 
@@ -168,11 +162,6 @@
 
           static get properties() {
               return {
-                  loggedIn: {
-                      type: Boolean,
-                      notify: true,
-                      observer: '_logged',
-                  },
                   income: {
                       type: Array,
                       notify: true,
@@ -197,17 +186,6 @@
               const thisYear = new Date().getFullYear();
               const prevYear = Number(thisYear - 1);
               const re = new RegExp(`${thisYear}|${prevYear}.*`);
-
-              this.$.ajax.addEventListener('loading-changed', (evt) => {
-                  // Notify main-page.html to stop or start the progress bar
-                  const event = new CustomEvent('income-loading',
-                      {
-                          detail: evt.detail.value,
-                          bubbles: true,
-                          composed: true,
-                      });
-                  this.dispatchEvent(event);
-              });
 
               this.addEventListener('income-saved', (e) => {
                   let index = this.income.findIndex((el) => {
@@ -290,17 +268,6 @@
                   this.$.income.deselectItem(item);
                   this.activeItem = null;
               }
-          }
-
-          _logged() {
-              // If we login we need to fetch the income from database
-              if (this.loggedIn) {
-                  this.$.ajax.generateRequest();
-              }
-          }
-
-          _handleBackendResponse(evt) {
-              this.income = evt.detail.response;
           }
 
           _showIncomeEditor() {

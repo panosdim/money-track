@@ -7,14 +7,13 @@
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-styles/color.html">
-<link rel="import" href="../bower_components/vaadin-date-picker/vaadin-date-picker.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
-<link rel="import" href="../bower_components/app-layout/demo/sample-content.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/vaadin-icons/vaadin-icons.html">
 <link rel="import" href="income-page.html">
 <link rel="import" href="expense-page.html">
 <link rel="import" href="categories-page.html">
+<link rel="import" href="dashboard-page.html">
 
 
 <dom-module id="main-page">
@@ -89,9 +88,9 @@
 
     <div class="content">
       <iron-pages id="tabPages" selected="{{tabSelected}}">
-        <sample-content size="100"></sample-content>
-        <income-page logged-in="{{loggedIn}}"></income-page>
-        <expense-page id="expensePage" logged-in="{{loggedIn}}" categories="{{categories}}"></expense-page>
+        <dashboard-page income="{{income}}" expense="{{expense}}"></dashboard-page>
+        <income-page income="{{income}}"></income-page>
+        <expense-page id="expensePage" expense="{{expense}}" categories="{{categories}}"></expense-page>
         <categories-page categories="{{categories}}"></categories-page>
       </iron-pages>
     </div>
@@ -102,6 +101,18 @@
                handle-as="json" last-response="{{categories}}"
                debounce-duration="500"
                auto>
+    </iron-ajax>
+
+    <iron-ajax id="ajaxIncome" url="php/get_income.php"
+               handle-as="json"
+               content-type="application/json;charset=UTF-8"
+               on-response="_updateIncome">
+    </iron-ajax>
+
+    <iron-ajax id="ajaxExpense" url="php/get_expense.php"
+               handle-as="json"
+               content-type="application/json;charset=UTF-8"
+               on-response="_updateExpense">
     </iron-ajax>
   </template>
 
@@ -141,6 +152,14 @@
                       type: Array,
                       notify: true,
                   },
+                  income: {
+                      type: Array,
+                      notify: true,
+                  },
+                  expense: {
+                      type: Array,
+                      notify: true,
+                  },
               };
           }
 
@@ -152,18 +171,19 @@
               super.ready();
 
               // Hide or show progress bar
-              this.addEventListener('income-loading', (e) => {
-                  this.incomeLoading = e.detail;
+              this.$.ajaxIncome.addEventListener('loading-changed', (evt) => {
+                  this.incomeLoading = evt.detail.value;
                   this.loading = !!(this.incomeLoading || this.expenseLoading);
               });
 
-              this.addEventListener('expense-loading', (e) => {
-                  this.expenseLoading = e.detail;
+              this.$.ajaxExpense.addEventListener('loading-changed', (evt) => {
+                  this.expenseLoading = evt.detail.value;
                   this.loading = !!(this.incomeLoading || this.expenseLoading);
               });
 
               this.addEventListener('expense-reload', (e) => {
-                  this.$.expensePage.reload();
+                  this.$.ajaxExpense.generateRequest();
+                  this.$.expensePage.filtersChanged();
               });
 
               // Fix the chart height in income tab
@@ -176,6 +196,8 @@
               // If we login we need to fetch the expense from database
               if (this.loggedIn) {
                   this.$.ajaxCategories.generateRequest();
+                  this.$.ajaxIncome.generateRequest();
+                  this.$.ajaxExpense.generateRequest();
               }
           }
 
@@ -183,6 +205,15 @@
               this.$.ajax.url = 'php/logout.php';
               this.$.ajax.generateRequest();
               this.loggedIn = false;
+          }
+
+          _updateIncome(evt) {
+              this.income = evt.detail.response;
+          }
+
+          _updateExpense(evt) {
+              this.expense = evt.detail.response;
+              this.$.expensePage.filtersChanged();
           }
       }
 

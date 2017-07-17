@@ -1,0 +1,168 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="category-editor.html">
+
+
+<dom-module id="dashboard-page">
+  <template>
+    <style>
+      :host {
+        --header-height: 176px;
+      }
+
+      #content {
+        display: flex;
+        justify-content: space-around;
+        flex-flow: row wrap;
+        overflow-y: scroll;
+        height: calc(100vh - var(--header-height));
+      }
+
+      paper-card {
+        width: 200px;
+        height: 85px;
+        margin: 10px;
+      }
+
+      div.income {
+        color: white;
+        background-color: #2185d0;
+      }
+
+      div.expenses {
+        color: white;
+        background-color: #db2828;
+      }
+
+      div.savings {
+        color: white;
+        background-color: #21ba45;
+      }
+
+      .header {
+        @apply(--paper-font-title);
+        text-align: center;
+      }
+
+      .amount {
+        @apply(--paper-font-subhead);
+        text-align: center;
+      }
+    </style>
+    <div id="content">
+      <paper-card>
+        <div class="card-content">
+          <div class="header">Total Income</div>
+          <div class="amount income">[[_formatMoney(totalIncome)]]</div>
+        </div>
+      </paper-card>
+      <paper-card>
+        <div class="card-content">
+          <div class="header">Total Expenses</div>
+          <div class="amount expenses">[[_formatMoney(totalExpenses)]]</div>
+        </div>
+      </paper-card>
+      <paper-card>
+        <div class="card-content">
+          <div class="header">Total Savings</div>
+          <div class="amount savings">[[_formatMoney(totalSavings)]]</div>
+        </div>
+      </paper-card>
+    </div>
+  </template>
+
+  <script>
+      class DashboardPage extends Polymer.Element {
+
+          static get is() {
+              return 'dashboard-page';
+          }
+
+          static get properties() {
+              return {
+                  expense: {
+                      type: Array,
+                      notify: true,
+                  },
+                  income: {
+                      type: Array,
+                      notify: true,
+                  },
+                  totalIncome: {
+                      type: Number,
+                      notify: true,
+                      value: 0.00,
+                  },
+                  totalExpenses: {
+                      type: Number,
+                      notify: true,
+                      value: 0.00,
+                  },
+                  totalSavings: {
+                      type: Number,
+                      notify: true,
+                      value: 0.00,
+                  },
+              };
+          }
+
+          static get observers() {
+              return [
+                  '_totalIncome(income.*)',
+                  '_totalExpenses(expense.*)',
+              ];
+          }
+
+          constructor() {
+              super();
+              const currencyOptions = {style: 'currency', currency: 'EUR'};
+              this.currencyFmt = new Intl.NumberFormat('de-DE', currencyOptions);
+          }
+
+          ready() {
+              super.ready();
+          }
+
+          _formatMoney(money) {
+              if (money) {
+                  return this.currencyFmt.format(money);
+              }
+          }
+
+          _totalIncome() {
+              if (this.income === undefined) {
+                  return;
+              }
+
+              let total = 0;
+              this.income.forEach((item) => {
+                  total += Number(item.amount);
+              });
+              this.totalIncome = total.toFixed(2);
+              this._totalSavings();
+          }
+
+          _totalExpenses() {
+              if (this.expense === undefined) {
+                  return;
+              }
+
+              let total = 0;
+              this.expense.forEach((item) => {
+                  total += Number(item.amount);
+              });
+              this.totalExpenses = total.toFixed(2);
+              this._totalSavings();
+          }
+
+          _totalSavings() {
+              let total = this.totalIncome - this.totalExpenses;
+              this.totalSavings = total.toFixed(2);
+          }
+      }
+
+      window.customElements.define(DashboardPage.is, DashboardPage);
+  </script>
+</dom-module>

@@ -120,14 +120,9 @@
       }
     </style>
 
-    <iron-ajax id="ajax" url="php/get_expense.php"
-               handle-as="json"
-               content-type="application/json;charset=UTF-8"
-               on-response="_handleBackendResponse">
-    </iron-ajax>
-
     <search-filters id="searchFilters" filters="{{filters}}" categories="{{categories}}"
-                    total="{{total}}"></search-filters>
+                    total="{{total}}">
+    </search-filters>
 
     <div id="content">
       <!-- The array is set as the <vaadin-grid>'s "items" property -->
@@ -204,11 +199,6 @@
 
           static get properties() {
               return {
-                  loggedIn: {
-                      type: Boolean,
-                      notify: true,
-                      observer: '_logged',
-                  },
                   filters: {
                       type: Object,
                       value: function() {
@@ -247,7 +237,7 @@
 
           static get observers() {
               return [
-                  '_filtersChanged(filters.*)',
+                  'filtersChanged(filters.*)',
               ];
           }
 
@@ -265,17 +255,6 @@
               const thisYear = new Date().getFullYear();
               const prevYear = Number(thisYear - 1);
               const re = new RegExp(`${thisYear}|${prevYear}.*`);
-
-              this.$.ajax.addEventListener('loading-changed', (evt) => {
-                  // Notify main-page.html to stop or start the progress bar
-                  const event = new CustomEvent('expense-loading',
-                      {
-                          detail: evt.detail.value,
-                          bubbles: true,
-                          composed: true,
-                      });
-                  this.dispatchEvent(event);
-              });
 
               this.addEventListener('expense-saved', (e) => {
                   let index = this.expense.findIndex((el) => {
@@ -307,7 +286,7 @@
 
                   this.splice('expense', index, 1);
                   this.push('expense', e.detail);
-                  this._filtersChanged();
+                  this.filtersChanged();
               });
 
               this.addEventListener('expense-deleted', (e) => {
@@ -315,7 +294,7 @@
                       return el.id === e.detail.id;
                   });
                   this.splice('expense', index, 1);
-                  this._filtersChanged();
+                  this.filtersChanged();
 
                   // Check if we need to update the expense chart
                   if (re.test(e.detail.date)) {
@@ -328,7 +307,7 @@
 
               this.addEventListener('expense-added', (e) => {
                   this.push('expense', e.detail);
-                  this._filtersChanged();
+                  this.filtersChanged();
 
                   // Check if we need to update the expense chart
                   if (re.test(e.detail.date)) {
@@ -368,11 +347,11 @@
               }
           }
 
-          _filtersChanged() {
+          filtersChanged() {
               if (this.expense === undefined) {
                   return;
               }
-              
+
               const category = this.filters.category;
               const start = this.filters.start;
               const end = this.filters.end;
@@ -413,25 +392,6 @@
                   total += Number(item.amount);
               });
               this.total = total.toFixed(2);
-          }
-
-          _logged() {
-              // If we login we need to fetch the expense from database
-              if (this.loggedIn) {
-                  this.$.ajax.generateRequest();
-              }
-          }
-
-          reload() {
-              if (this.loggedIn) {
-                  this.$.ajax.generateRequest();
-                  this._filtersChanged();
-              }
-          }
-
-          _handleBackendResponse(evt) {
-              this.expense = evt.detail.response;
-              this._filtersChanged();
           }
 
           _showExpenseEditor() {

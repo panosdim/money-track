@@ -48,6 +48,12 @@
       #clear-button {
         color: #00b4f0;
       }
+
+      @media (max-width: 1020px) {
+        #fastDates {
+          display: none;
+        }
+      }
     </style>
 
 
@@ -65,7 +71,7 @@
             <vaadin-date-picker id="to" auto-validate label="To" value="{{filters.end}}"
                                 min="{{filters.start}}"></vaadin-date-picker>
           </div>
-          <div>
+          <div id="fastDates">
             <paper-button raised on-tap="_setDate">Today</paper-button>
             <paper-button raised on-tap="_setDate">Yesterday</paper-button>
             <paper-button raised on-tap="_setDate">This Month</paper-button>
