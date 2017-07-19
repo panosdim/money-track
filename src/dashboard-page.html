@@ -2,7 +2,7 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
-<link rel="import" href="category-editor.html">
+<link rel="import" href="dashboard-chart.html">
 
 
 <dom-module id="dashboard-page">
@@ -26,17 +26,17 @@
         margin: 10px;
       }
 
-      div.income {
+      div.total {
         color: white;
         background-color: #2185d0;
       }
 
-      div.expenses {
+      div.year {
         color: white;
-        background-color: #db2828;
+        background-color: #39cedc;
       }
 
-      div.savings {
+      div.month {
         color: white;
         background-color: #21ba45;
       }
@@ -50,26 +50,31 @@
         @apply(--paper-font-subhead);
         text-align: center;
       }
+
+      dashboard-chart {
+        width: 100%;
+      }
     </style>
     <div id="content">
       <paper-card>
         <div class="card-content">
-          <div class="header">Total Income</div>
-          <div class="amount income">[[_formatMoney(totalIncome)]]</div>
-        </div>
-      </paper-card>
-      <paper-card>
-        <div class="card-content">
-          <div class="header">Total Expenses</div>
-          <div class="amount expenses">[[_formatMoney(totalExpenses)]]</div>
-        </div>
-      </paper-card>
-      <paper-card>
-        <div class="card-content">
           <div class="header">Total Savings</div>
-          <div class="amount savings">[[_formatMoney(totalSavings)]]</div>
+          <div class="amount total">[[_formatMoney(totalSavings)]]</div>
         </div>
       </paper-card>
+      <paper-card>
+        <div class="card-content">
+          <div class="header">Year Savings</div>
+          <div class="amount year">[[_formatMoney(yearSavings)]]</div>
+        </div>
+      </paper-card>
+      <paper-card>
+        <div class="card-content">
+          <div class="header">Month Savings</div>
+          <div class="amount month">[[_formatMoney(monthSavings)]]</div>
+        </div>
+      </paper-card>
+      <dashboard-chart id="chart"></dashboard-chart>
     </div>
   </template>
 
@@ -92,26 +97,59 @@
                   },
                   totalIncome: {
                       type: Number,
-                      notify: true,
                       value: 0.00,
                   },
                   totalExpenses: {
                       type: Number,
-                      notify: true,
+                      value: 0.00,
+                  },
+                  yearIncome: {
+                      type: Number,
+                      value: 0.00,
+                  },
+                  yearExpenses: {
+                      type: Number,
+                      value: 0.00,
+                  },
+                  monthIncome: {
+                      type: Number,
+                      value: 0.00,
+                  },
+                  monthExpenses: {
+                      type: Number,
                       value: 0.00,
                   },
                   totalSavings: {
                       type: Number,
-                      notify: true,
                       value: 0.00,
+                  },
+                  yearSavings: {
+                      type: Number,
+                      value: 0.00,
+                  },
+                  monthSavings: {
+                      type: Number,
+                      value: 0.00,
+                  },
+                  perYearIncome: {
+                      type: Object,
+                      value: {},
+                  },
+                  perYearExpenses: {
+                      type: Object,
+                      value: {},
+                  },
+                  table: {
+                      type: Array,
+                      value: [],
                   },
               };
           }
 
           static get observers() {
               return [
-                  '_totalIncome(income.*)',
-                  '_totalExpenses(expense.*)',
+                  '_incomeChanged(income.*)',
+                  '_expensesChanged(expense.*)',
               ];
           }
 
@@ -131,35 +169,97 @@
               }
           }
 
-          _totalIncome() {
+          _incomeChanged() {
               if (this.income === undefined) {
                   return;
               }
 
               let total = 0;
+              let totMonth = 0;
+              let perYear = {};
+
+              const thisYear = new Date().getFullYear();
+              const thisMonth = ('0' + (new Date().getMonth() + 1)).slice(-2);
+              const reThisMonth = new RegExp(`${thisYear}-${thisMonth}.*`);
+
               this.income.forEach((item) => {
                   total += Number(item.amount);
+                  let year = item.date.split('-', 1)[0];
+                  if (perYear.hasOwnProperty(year)) {
+                      perYear[year] += Number(item.amount);
+                  } else {
+                      perYear[year] = Number(item.amount);
+                  }
+                  if (reThisMonth.test(item.date)) {
+                      totMonth += Number(item.amount);
+                  }
               });
-              this.totalIncome = total.toFixed(2);
-              this._totalSavings();
+
+              Object.keys(perYear).forEach((year) => {
+                  this.perYearIncome[year] = Number(perYear[year].toFixed(2));
+              });
+
+              this.totalIncome = Number(total.toFixed(2));
+              this.yearIncome = this.perYearIncome[thisYear];
+              this.monthIncome = Number(totMonth.toFixed(2));
+              this._updateSavings();
           }
 
-          _totalExpenses() {
+          _expensesChanged() {
               if (this.expense === undefined) {
                   return;
               }
 
               let total = 0;
+              let totMonth = 0;
+              let perYear = {};
+
+              const thisYear = new Date().getFullYear();
+              const thisMonth = ('0' + (new Date().getMonth() + 1)).slice(-2);
+              const reThisMonth = new RegExp(`${thisYear}-${thisMonth}.*`);
+
               this.expense.forEach((item) => {
                   total += Number(item.amount);
+                  let year = item.date.split('-', 1)[0];
+                  if (perYear.hasOwnProperty(year)) {
+                      perYear[year] += Number(item.amount);
+                  } else {
+                      perYear[year] = Number(item.amount);
+                  }
+                  if (reThisMonth.test(item.date)) {
+                      totMonth += Number(item.amount);
+                  }
               });
-              this.totalExpenses = total.toFixed(2);
-              this._totalSavings();
+
+              Object.keys(perYear).forEach((year) => {
+                  this.perYearExpenses[year] = Number(perYear[year].toFixed(2));
+              });
+
+              this.totalExpenses = Number(total.toFixed(2));
+              this.yearExpenses = this.perYearExpenses[thisYear];
+              this.monthExpenses = Number(totMonth.toFixed(2));
+              this._updateSavings();
           }
 
-          _totalSavings() {
+          _updateSavings() {
               let total = this.totalIncome - this.totalExpenses;
-              this.totalSavings = total.toFixed(2);
+              let year = this.yearIncome - this.yearExpenses;
+              let month = this.monthIncome - this.monthExpenses;
+
+              this.totalSavings = Number(total.toFixed(2));
+              this.yearSavings = Number(year.toFixed(2));
+              this.monthSavings = Number(month.toFixed(2));
+
+              // Update Chart
+              this.table = [['Year', 'Income', 'Expenses', 'Savings']];
+              const years = new Set(Object.keys(this.perYearIncome).concat(Object.keys(this.perYearExpenses)));
+              years.forEach((year) => {
+                  const inc = this.perYearIncome.hasOwnProperty(year) ? this.perYearIncome[year] : 0;
+                  const exp = this.perYearExpenses.hasOwnProperty(year) ? this.perYearExpenses[year] : 0;
+                  const sav = inc - exp;
+                  this.table.push([year, inc, exp, Number(sav.toFixed(2))]);
+              });
+              this.$.chart.update(this.table);
           }
       }
 

@@ -20,6 +20,7 @@
     "Polymer": true,
     "Intl": true,
     "moment": true,
-    "google": true
+    "google": true,
+    "Set": true
   }
 }

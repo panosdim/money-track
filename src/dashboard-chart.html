@@ -1,0 +1,76 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="dashboard-chart">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      #chart_div {
+        width: 100%;
+        height: 500px;
+      }
+    </style>
+
+    <div id="chart_div"></div>
+
+  </template>
+
+  <script>
+      class DashboardChart extends Polymer.Element {
+
+          static get is() {
+              return 'dashboard-chart';
+          }
+
+          static get properties() {
+              return {
+                  chart: {
+                      type: Object,
+                  },
+              };
+          }
+
+          static get observers() {
+              return [
+                  '_incomeChanged(income.*)',
+                  '_expensesChanged(expense.*)',
+              ];
+          }
+
+          constructor() {
+              super();
+          }
+
+          ready() {
+              super.ready();
+              this.chart = new google.visualization.ColumnChart(this.$.chart_div);
+          }
+
+          update(table) {
+              const data = google.visualization.arrayToDataTable(table);
+
+              const options = {
+                  title: 'Income, Expenses, Savings per Year',
+                  hAxis: {
+                      title: 'Years',
+                      minValue: 0,
+                  },
+                  backgroundColor: '#f8f9f9',
+                  vAxis: {
+                      title: 'Euro',
+                  },
+              };
+
+              this.chart.draw(data, options);
+
+              window.addEventListener('resize', () => {
+                  this.chart.draw(data, options);
+              }, false);
+          }
+      }
+
+      window.customElements.define(DashboardChart.is, DashboardChart);
+  </script>
+</dom-module>
