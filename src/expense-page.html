@@ -293,16 +293,17 @@
                   let index = this.expense.findIndex((el) => {
                       return el.id === e.detail.id;
                   });
-                  this.splice('expense', index, 1);
-                  this.filtersChanged();
 
                   // Check if we need to update the expense chart
-                  if (re.test(e.detail.date)) {
+                  if (re.test(this.expense[index].date)) {
                       let item = {};
-                      item.date = e.detail.date;
-                      item.amount = -e.detail.amount;
+                      item.date = this.expense[index].date;
+                      item.amount = -this.expense[index].amount;
                       this.$.chart.update(item);
                   }
+
+                  this.splice('expense', index, 1);
+                  this.filtersChanged();
               });
 
               this.addEventListener('expense-added', (e) => {

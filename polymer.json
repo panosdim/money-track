@@ -4,8 +4,10 @@
   "fragments": [
     "src/login-page.html",
     "src/main-page.html",
-    "src/my-view3.html",
-    "src/my-view404.html"
+    "src/dashboard-page.html",
+    "src/income-page.html",
+    "src/expense-page.html",
+    "src/categories-page.html"
   ],
   "sources": [
     "src/**/*",

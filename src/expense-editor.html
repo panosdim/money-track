@@ -225,7 +225,21 @@
 
           _save() {
               this.$.error.innerText = '';
-              if (this._validate(this.$.form)) {
+
+              // Mark datepicker as invalid or valid
+              // TODO: check if needs to be removed in final release of vaadin-date-picker
+              const input = this.$.date.shadowRoot.querySelector('vaadin-text-field');
+              const label = input.shadowRoot.querySelector('label');
+              const div = input.shadowRoot.querySelector('div[part~="input-field"]');
+              if (this.$.date.validate()) {
+                  div.removeAttribute('invalid');
+                  label.removeAttribute('invalid');
+              } else {
+                  div.setAttribute('invalid', '');
+                  label.setAttribute('invalid', '');
+              }
+
+              if (this.$.form.validate()) {
                   this.expense.date = moment(this.$.date._inputValue, 'DD/MM/YYYY').format('YYYY-MM-DD');
                   if (!this.expense.hasOwnProperty('comment')) {
                       this.expense.comment = '';
@@ -265,36 +279,6 @@
               this.$.ajax.url = 'php/delete_expense.php';
               this.$.ajax.body = JSON.stringify(this.expense);
               this.$.ajax.generateRequest();
-          }
-
-          _validate(form) {
-              const inputs = form.getElementsByTagName('paper-input');
-              const dates = form.getElementsByTagName('vaadin-date-picker');
-              // TODO: check why iron-form validate is not correct
-              // We call it for check validity in vaadin-combo-box
-              let result = this.$.category.validate();
-
-              for (let i = 0, len = inputs.length; i < len; i++) {
-                  if (!inputs[i].validate()) {
-                      result = false;
-                  }
-              }
-
-              // Validate vaadin-date-picker
-              for (let i = 0, len = dates.length; i < len; i++) {
-                  const input = dates[i].shadowRoot.querySelector('vaadin-text-field');
-                  const label = input.shadowRoot.querySelector('label');
-                  const div = input.shadowRoot.querySelector('div[part~="input-field"]');
-                  if (!dates[i].checkValidity()) {
-                      div.setAttribute('invalid', '');
-                      label.setAttribute('invalid', '');
-                      result = false;
-                  } else {
-                      div.removeAttribute('invalid');
-                      label.removeAttribute('invalid');
-                  }
-              }
-              return result;
           }
 
           _clear(form) {

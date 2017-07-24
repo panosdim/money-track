@@ -36,7 +36,6 @@ if ($stmt->execute([$username])) {
             ]);
             $_SESSION['userId'] = $query['id'];
             $_SESSION['username'] = $username;
-            // TODO: Load demo data in MySQL for demo user
         } else {
             // Authentication was not successful. Inform user with message.
             echo json_encode([
