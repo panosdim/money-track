@@ -1,6 +1,9 @@
 {
   "entrypoint": "index.html",
   "shell": "src/money-track.html",
+  "builds": [{
+    "preset": "es6-unbundled"
+  }],
   "fragments": [
     "src/login-page.html",
     "src/main-page.html",
@@ -12,11 +15,13 @@
   "sources": [
     "src/**/*",
     "images/**/*",
+    "php/**/*",
     "bower.json"
   ],
   "extraDependencies": [
     "manifest.json",
-    "bower_components/webcomponentsjs/*.js"
+    "bower_components/webcomponentsjs/*.js",
+    "bower_components/moment/min/moment.min.js"
   ],
   "lint": {
     "rules": ["polymer-2"]
