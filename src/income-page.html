@@ -13,14 +13,14 @@
       :host {
         --app-primary-color: #4285f4;
         --app-secondary-color: pink;
-        --header-height: 176px;
+        --header-height: 128px;
         display: flex;
       }
 
       #add-button {
-        position: absolute;
-        right: 32px;
-        bottom: 32px;
+        position: fixed;
+        right: calc(40% - 28px);
+        top: calc(var(--header-height) - 28px);
         z-index: 2;
       }
 
@@ -41,6 +41,13 @@
       @media (max-width: 900px) {
         #chart {
           display: none;
+        }
+
+        #add-button {
+          position: absolute;
+          right: 32px;
+          bottom: 32px;
+          top:inherit;
         }
 
         #income {
