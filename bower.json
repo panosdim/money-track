@@ -36,7 +36,8 @@
     "vaadin-icons": "^4.1.0",
     "iron-form": "^2.0.0",
     "vaadin-combo-box": "^2.0.0",
-    "moment": "^2.18.1"
+    "moment": "^2.18.1",
+    "paper-checkbox": "PolymerElements/paper-checkbox#^2.0.1"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^6.0.0"

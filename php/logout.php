@@ -2,6 +2,7 @@
 
 // Initialize the session.
 session_start();
+require_once 'database.php';
 
 // Unset all of the session variables.
 $_SESSION = [];
@@ -14,6 +15,25 @@ if (ini_get("session.use_cookies")) {
         $params["path"], $params["domain"],
         $params["secure"], $params["httponly"]
     );
+}
+
+if (isset($_COOKIE['rememberme'])) {
+    $selector = $_COOKIE['rememberme']['selector'];
+
+    // Delete authentication token from DB
+    $stmt = $db->prepare(
+        'DELETE FROM `auth_tokens` WHERE `selector` = ?'
+    );
+
+    if ($stmt->execute([$selector])) {
+        // Remove rememberme cookies
+        setcookie("rememberme[series]", "", time() - 42000, '/', NULL, false, true);
+        setcookie("rememberme[selector]", "", time() - 42000, '/', NULL, false, true);
+        setcookie("rememberme[token]", "", time() - 42000, '/', NULL, false, true);
+
+        // Unset all of the cookie variables.
+        $_COOKIE = [];
+    }
 }
 
 // Finally, destroy the session.

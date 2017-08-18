@@ -6,6 +6,7 @@
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 
 
 <dom-module id="login-page">
@@ -31,11 +32,18 @@
       }
 
       #btnSubmit {
-        margin: 20px 0 0 0;
         padding-left: 30px;
         padding-right: 30px;
         background: var(--primary-color);
         color: var(--text-primary-color);
+      }
+
+      .horizontal {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 20px;
+        position: relative;
       }
     </style>
     <iron-a11y-keys keys="enter" on-keys-pressed="_logIn"></iron-a11y-keys>
@@ -52,11 +60,12 @@
                          autocomplete="on"
                          error-message="Password is needed!">
             </paper-input>
+            <div class="horizontal">
+              <paper-button id="btnSubmit" on-tap="_logIn" raised>Login</paper-button>
+              <paper-checkbox id="remember" name="remember">Remember me</paper-checkbox>
+            </div>
           </form>
         </iron-form>
-      </div>
-      <div class="card-actions">
-        <paper-button form="loginForm" id="btnSubmit" on-tap="_logIn" raised>Login</paper-button>
       </div>
     </paper-card>
 
