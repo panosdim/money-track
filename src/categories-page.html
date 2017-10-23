@@ -1,8 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
 <link rel="import" href="category-editor.html">
@@ -53,6 +53,14 @@
       #toast[success] {
         --paper-toast-background-color: green;
       }
+
+      paper-icon-button.red {
+        color: var(--paper-red-500);
+      }
+
+      paper-icon-button.blue {
+        color: var(--paper-blue-500);
+      }
     </style>
     <div id="content">
       <template is="dom-repeat" items="{{categories}}">
@@ -62,8 +70,8 @@
           </div>
           <div class="card-actions">
             <div class="actions">
-              <paper-icon-button icon="icons:create" on-tap="_showCategoryEditor"></paper-icon-button>
-              <paper-icon-button icon="icons:delete" on-tap="_deleteCategory"></paper-icon-button>
+              <paper-icon-button class="blue" icon="icons:create" on-tap="_showCategoryEditor"></paper-icon-button>
+              <paper-icon-button class="red" icon="icons:delete" on-tap="_deleteCategory"></paper-icon-button>
             </div>
           </div>
         </paper-card>

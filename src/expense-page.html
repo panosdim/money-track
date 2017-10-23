@@ -1,5 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/vaadin-valo-theme/vaadin-grid.html">
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-sorter.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
@@ -16,42 +17,49 @@
         --app-primary-color: #4285f4;
         --app-secondary-color: pink;
         --header-height: 128px;
-        --filters-height: 158px;
-        display: flex;
-        flex-direction: column;
+        --filters-height: 200px;
       }
 
       #add-button {
         position: fixed;
-        right: calc(35% - 28px);
-        top: calc(var(--header-height) + var(--filters-height) - 38px);
+        right: calc(35% - 17px);
+        top: calc(var(--header-height) + var(--filters-height) - 28px);
         z-index: 2;
       }
 
       #content {
-        flex: 1;
         display: flex;
         flex-direction: row;
+        flex-flow: row wrap;
+        overflow-y: scroll;
+        height: calc(100vh - var(--header-height));
+      }
+
+      #row {
+        display: flex;
+        flex: 1 100%;
+        flex-direction: row;
+        height: calc(100vh - var(--header-height) - var(--filters-height));
       }
 
       #expense {
         flex: 1;
         color: var(--primary-text-color);
         border: 0;
-        height: calc(100vh - var(--header-height) - var(--filters-height));
+        height: 100%;
       }
 
       #chart {
         border-left: 1px solid #ddd;
         width: 35%;
-        height: calc(100vh - var(--header-height) - var(--filters-height));
+        height: 100%;
         z-index: 1;
       }
 
       #searchFilters {
-        flex: 1;
+        flex: 1 100%;
         z-index: 1;
-        padding-bottom: 10px;
+        height: var(--filters-height);
         padding-left: 10px;
         padding-right: 10px;
       }
@@ -70,7 +78,7 @@
 
         #expense {
           margin-bottom: 0;
-          height: calc(100vh - var(--header-height) - var(--filters-height));
+          height: 100%;
         }
       }
 
@@ -126,11 +134,11 @@
       }
     </style>
 
-    <search-filters id="searchFilters" filters="{{filters}}" categories="{{categories}}"
-                    total="{{total}}">
-    </search-filters>
-
     <div id="content">
+      <search-filters id="searchFilters" filters="{{filters}}" categories="{{categories}}"
+                      total="{{total}}">
+      </search-filters>
+      <div id="row">
       <!-- The array is set as the <vaadin-grid>'s "items" property -->
       <vaadin-grid id="expense" aria-label="Expense" items="[[_filteredExpenses]]" active-item="{{activeItem}}"
                    multi-sort>
@@ -192,6 +200,7 @@
       <paper-fab icon="add" on-tap="_showExpenseEditor" id="add-button"></paper-fab>
       <expense-editor id="expenseEditor" categories="{{categories}}"></expense-editor>
       <expense-chart id="chart" expense='[[expense]]'></expense-chart>
+    </div>
     </div>
 
   </template>
@@ -324,11 +333,6 @@
                       this.$.chart.update(item);
                   }
               });
-
-//              window.addEventListener('resize', () => {
-//                  const height = this.$.searchFilters.scrollHeight + 10;
-//                  this.$.searchFilters.style.maxHeight = height + 'px';
-//              }, false);
           }
 
           _formatMoney(money) {
@@ -369,7 +373,7 @@
               // Filter
               if (category) {
                   filteredExp = filteredExp.filter((exp) => {
-                      return !(exp.category.toUpperCase().indexOf(category.toUpperCase()) < 0);
+                      return exp.category.toUpperCase() === category.toUpperCase();
                   });
               }
               if (start) {

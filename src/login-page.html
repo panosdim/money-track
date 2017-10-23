@@ -1,12 +1,16 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-styles/color.html">
-<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/vaadin-valo-theme/vaadin-text-field.html">
+<link rel="import" href="../bower_components/vaadin-text-field/vaadin-text-field.html">
+<link rel="import" href="../bower_components/vaadin-text-field/vaadin-password-field.html">
+<link rel="import" href="../bower_components/vaadin-valo-theme/vaadin-button.html">
+<link rel="import" href="../bower_components/vaadin-button/vaadin-button.html">
+<link rel="import" href="../bower_components/vaadin-valo-theme/vaadin-checkbox.html">
+<link rel="import" href="../bower_components/vaadin-checkbox/vaadin-checkbox.html">
 
 
 <dom-module id="login-page">
@@ -31,19 +35,24 @@
         };
       }
 
-      #btnSubmit {
-        padding-left: 30px;
-        padding-right: 30px;
-        background: var(--primary-color);
-        color: var(--text-primary-color);
-      }
-
       .horizontal {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding-top: 20px;
         position: relative;
+      }
+
+      vaadin-text-field {
+        --valo-required-field-indicator: ""
+      }
+
+      vaadin-password-field {
+        --valo-required-field-indicator: ""
+      }
+
+      form > * {
+        width: 100%;
       }
     </style>
     <iron-a11y-keys keys="enter" on-keys-pressed="_logIn"></iron-a11y-keys>
@@ -53,16 +62,13 @@
         <iron-form id="loginForm">
           <form class="login">
             <!--TODO: Check why not saving credentials in browser-->
-            <paper-input id="username" label="Username" name="username" required auto-validate autocomplete="on"
-                         error-message="Username is needed!">
-            </paper-input>
-            <paper-input id="password" label="Password" name="password" type="password" required auto-validate
-                         autocomplete="on"
-                         error-message="Password is needed!">
-            </paper-input>
+            <vaadin-text-field id="username" label="Username" name="username" required>
+            </vaadin-text-field>
+            <vaadin-password-field id="password" label="Password" name="password" required>
+            </vaadin-password-field>
             <div class="horizontal">
-              <paper-button id="btnSubmit" on-tap="_logIn" raised>Login</paper-button>
-              <paper-checkbox id="remember" name="remember">Remember me</paper-checkbox>
+              <vaadin-button theme="primary" id="btnSubmit" on-tap="_logIn" raised>Login</vaadin-button>
+              <vaadin-checkbox id="remember" name="remember">Remember me</vaadin-checkbox>
             </div>
           </form>
         </iron-form>

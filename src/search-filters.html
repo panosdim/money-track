@@ -1,8 +1,10 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/vaadin-valo-theme/vaadin-combo-box.html">
 <link rel="import" href="../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../bower_components/vaadin-valo-theme/vaadin-date-picker.html">
 <link rel="import" href="../bower_components/vaadin-date-picker/vaadin-date-picker.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/vaadin-valo-theme/vaadin-button.html">
+<link rel="import" href="../bower_components/vaadin-button/vaadin-button.html">
 
 <dom-module id="search-filters">
   <template>
@@ -37,14 +39,6 @@
         justify-content: space-between;
       }
 
-      .dates {
-        display: flex;
-      }
-
-      vaadin-combo-box {
-        padding: 0 0;
-      }
-
       #clear-button {
         color: #00b4f0;
       }
@@ -60,11 +54,11 @@
     <div class="filters">
       <div class="header">
         <div class="title">Filter Expenses</div>
-        <paper-button id="clear-button" on-tap="_clearFilters">Clear Filters</paper-button>
+        <vaadin-button theme="tertiary" id="clear-button" on-tap="_clearFilters">Clear Filters</vaadin-button>
       </div>
       <div id="content">
         <div class="row">
-          <div class="dates">
+          <div>
             <vaadin-date-picker id="from" auto-validate label="From" value="{{filters.start}}"
                                 max="{{filters.end}}"></vaadin-date-picker>
             <span>–</span>
@@ -72,12 +66,12 @@
                                 min="{{filters.start}}"></vaadin-date-picker>
           </div>
           <div id="fastDates">
-            <paper-button raised on-tap="_setDate">Today</paper-button>
-            <paper-button raised on-tap="_setDate">Yesterday</paper-button>
-            <paper-button raised on-tap="_setDate">This Month</paper-button>
-            <paper-button raised on-tap="_setDate">Previous Month</paper-button>
-            <paper-button raised on-tap="_setDate">This Year</paper-button>
-            <paper-button raised on-tap="_setDate">Previous Year</paper-button>
+            <vaadin-button on-tap="_setDate">Today</vaadin-button>
+            <vaadin-button on-tap="_setDate">Yesterday</vaadin-button>
+            <vaadin-button on-tap="_setDate">This Month</vaadin-button>
+            <vaadin-button on-tap="_setDate">Previous Month</vaadin-button>
+            <vaadin-button on-tap="_setDate">This Year</vaadin-button>
+            <vaadin-button on-tap="_setDate">Previous Year</vaadin-button>
           </div>
         </div>
         <div class="row">
@@ -88,9 +82,6 @@
           <div>Total Amount: [[total]] &euro;</div>
         </div>
       </div>
-    </div>
-    <div id="footer">
-      <content></content>
     </div>
   </template>
 
@@ -164,7 +155,8 @@
           }
 
           _setDate(e) {
-              switch (e.path[0].innerHTML) {
+              let name = e.path[0].getElementsByTagName('slot')[0].assignedNodes()[0].textContent;
+              switch (name) {
                   case 'Today': {
                       const today = moment().format('YYYY-MM-DD');
                       this.set('filters', {'start': today, 'end': today, 'category': this.filters.category});
